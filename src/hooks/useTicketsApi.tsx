@@ -13,6 +13,7 @@ export interface TicketCode {
 
 export interface Ticket {
   ticketId: string;
+  createdAt: { _seconds: number; _nanoseconds: number };
   codes: TicketCode[];
 }
 
@@ -58,6 +59,7 @@ export function useTicketsApi() {
               uptime: profile.uptime,
               ticket: {
                 ticketId: t.id,
+                createdAt: t.createdAt,
                 codes: t.codes.map((c: any) => ({
                   value: c.code,
                   used: c.status,

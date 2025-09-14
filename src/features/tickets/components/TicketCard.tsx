@@ -59,7 +59,7 @@ export default function TicketCard({ item }: TicketCardProps) {
       {/* Pie de la tarjeta */}
       <div className="bg-slate-50 px-5 py-3 flex justify-between items-center border-t border-slate-200">
         <p className="text-xs text-primary-500 font-bold">
-          Creado: {new Date().toLocaleDateString()}
+          Creado:  {new Date(item.ticket.createdAt._seconds * 1000).toLocaleDateString()}
         </p>
         <div className="flex items-center gap-3">
           <button onClick={() => handlerPrint(item)} className="bg-primary-600 text-white flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 cursor-pointer">
