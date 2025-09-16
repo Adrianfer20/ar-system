@@ -80,25 +80,17 @@ const SalesPage: React.FC = () => {
     return Array.from(new Set(tickets.map(t => t.user))).sort();
   }, [tickets]);
 
-  // 4. Agrupar por día o semana
+  // 4. Agrupar por día o semana, luego por usuario y perfil
   const groupedSales = useMemo(() => {
-    if (mode === "day") {
-      const grouped: Record<string, Sale[]> = {};
-      filteredSales.forEach(s => {
-        const day = s.usedAt.toISOString().slice(0, 10);
-        if (!grouped[day]) grouped[day] = [];
-        grouped[day].push(s);
-      });
-      return grouped;
-    } else {
-      const grouped: Record<string, Sale[]> = {};
-      filteredSales.forEach(s => {
-        const week = `${s.usedAt.getFullYear()}-W${getWeekNumber(s.usedAt)}`;
-        if (!grouped[week]) grouped[week] = [];
-        grouped[week].push(s);
-      });
-      return grouped;
-    }
+    const grouped: Record<string, Record<string, Record<string, Sale[]>>> = {};
+    filteredSales.forEach(s => {
+      const period = mode === "day" ? s.usedAt.toISOString().slice(0, 10) : `${s.usedAt.getFullYear()}-W${getWeekNumber(s.usedAt)}`;
+      if (!grouped[period]) grouped[period] = {};
+      if (!grouped[period][s.user]) grouped[period][s.user] = {};
+      if (!grouped[period][s.user][s.profile]) grouped[period][s.user][s.profile] = [];
+      grouped[period][s.user][s.profile].push(s);
+    });
+    return grouped;
   }, [filteredSales, mode]);
 
   // 5. Función para alternar "ver más"
@@ -159,8 +151,18 @@ const SalesPage: React.FC = () => {
       {Object.entries(groupedSales).length === 0 ? (
         <p className="text-gray-500">No hay ventas para los filtros seleccionados.</p>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Object.entries(groupedSales).map(([period, sales]) => (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
+          {Object.entries(groupedSales)
+            .sort(([a], [b]) => {
+              if (mode === "day") {
+                return new Date(a).getTime() - new Date(b).getTime();
+              } else {
+                const [yearA, weekA] = a.split('-W').map(Number);
+                const [yearB, weekB] = b.split('-W').map(Number);
+                return yearA !== yearB ? yearA - yearB : weekA - weekB;
+              }
+            })
+            .map(([period, userGroups]) => (
             <Card key={period}>
               <CardHeader>
                 <CardTitle>
@@ -168,39 +170,40 @@ const SalesPage: React.FC = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {users
-                  .filter(u => selectedUser === "all" || u === selectedUser)
-                  .map(u => {
-                    const userSales = sales.filter(s => s.user === u);
-                    if (userSales.length === 0) return null;
+                {Object.entries(userGroups)
+                  .filter(([user]) => selectedUser === "all" || user === selectedUser)
+                  .map(([user, salesByProfile]) => (
+                    <div key={user} className="mb-4">
+                      <h3 className="font-medium text-gray-800 capitalize">{user}</h3>
+                      {Object.entries(salesByProfile).map(([profile, sales]) => {
+                        const key = `${period}-${user}-${profile}`;
+                        const isExpanded = expanded[key] || false;
 
-                    const key = `${period}-${u}`;
-                    const isExpanded = expanded[key] || false;
-
-                    return (
-                      <div key={u} className="mb-4">
-                        <h3 className="font-medium text-gray-800 capitalize">{u}</h3>
-                        <div className="flex items-center justify-between mt-1">
-                          <p className="text-gray-500">{userSales.length} tickets vendidos</p>
-                          <button
-                            onClick={() => toggleExpand(key)}
-                            className="text-primary-500 hover:underline cursor-pointer"
-                          >
-                            {isExpanded ? "ver menos" : "ver más"}
-                          </button>
-                        </div>
-                        {isExpanded && (
-                          <ul className="list-disc list-inside mt-2 space-y-1">
-                            {userSales.map((s, idx) => (
-                              <li key={idx} className="text-gray-600">
-                                {s.code}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    );
-                  })}
+                        return (
+                          <div key={profile} className="mt-2 bg-gray-50 p-3 rounded border border-gray-200">
+                            <p className="text-gray-600 text-sm">{sales.length} tickets vendidos ({profile})</p>
+                            <div className="flex items-center justify-between mt-1">
+                              <button
+                                onClick={() => toggleExpand(key)}
+                                className="text-primary-500 hover:underline cursor-pointer"
+                              >
+                                {isExpanded ? "ver menos" : "ver más"}
+                              </button>
+                            </div>
+                            {isExpanded && (
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {sales.map((s, idx) => (
+                                  <span key={idx} className="bg-gray-100 px-2 py-1 rounded text-gray-600 text-sm">
+                                    {s.code}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
               </CardContent>
             </Card>
           ))}
