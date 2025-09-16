@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useTickets } from "@/context/TicketsContext";
 import TicketFilters from "./TicketFilters";
 import ClientList from "./ClientList";
+import { H2, P } from "@/components/ui/Typography";
 
 const SectionRegister = () => {
   const { tickets, loading, error } = useTickets();
@@ -48,21 +49,13 @@ const SectionRegister = () => {
         onCodeChange={setCodeFilter}
       />
 
-      <h1 className="text-2xl font-bold mb-4">👤 Lista de Clientes</h1>
+  <H2 className="mb-4">👤 Lista de Clientes</H2>
 
       {/* Mensajes de estado en lugar correcto */}
-      {loading && (
-        <p className="text-center text-gray-500">Cargando Clientes...</p>
-      )}
-      {error && (
-        <p className="text-center text-red-500 p-2 rounded-md bg-red-100">
-          {error}
-        </p>
-      )}
+      {loading && <P className="text-center" variant="muted">Cargando Clientes...</P>}
+      {error && <P className="text-center p-2 rounded-md bg-red-100" variant="danger">{error}</P>}
       {!loading && !error && (!tickets || tickets.length === 0) && (
-        <p className="text-center text-gray-600">
-          No hay clientes cargados aún...
-        </p>
+        <P className="text-center" variant="muted">No hay clientes cargados aún...</P>
       )}
 
       {!loading && !error && tickets && (

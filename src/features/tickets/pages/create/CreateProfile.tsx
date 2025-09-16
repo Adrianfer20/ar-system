@@ -9,6 +9,7 @@ import Card, { CardBody } from "@/components/ui/Card";
 import Select from "@/components/ui/Select";
 import FieldInput from "@/components/ui/FieldInput";
 import Button from "@/components/ui/Button";
+import { H2, P } from "@/components/ui/Typography";
 
 type ProfilePayload = {
   name: string;
@@ -95,13 +96,13 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
 
   return (
     <div className="max-w-xl mx-auto p-6">
-      <h2 className="text-2xl font-bold text-slate-800 text-center mb-4">Registrar Perfil Hotspot</h2>
+      <H2 className="text-center mb-4">Registrar Perfil Hotspot</H2>
 
       {/* usuarios loading / error */}
       {loadingUsers ? (
-        <p className="mb-4 text-slate-500">Cargando usuarios...</p>
+        <P className="mb-4" variant="muted">Cargando usuarios...</P>
       ) : usersError ? (
-        <p className="mb-4 text-red-500">{usersError}</p>
+        <P className="mb-4" variant="danger">{usersError}</P>
       ) : null}
 
       <Card>
@@ -147,7 +148,7 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
           />
 
           {/* mensajes */}
-          {submitError && <p className="text-red-600 text-sm">{submitError}</p>}
+          {submitError && <P className="text-sm" variant="danger">{submitError}</P>}
 
           <div className="flex gap-2">
             <Button type="submit" onClick={handleSubmit as any} fullWidth isLoading={creating} disabled={creating}>

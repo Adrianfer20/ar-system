@@ -8,6 +8,7 @@ import { useUsersApi } from "@/hooks/useUserApi";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useTickets } from "@/context/TicketsContext";
 import { useFormHandler } from '@/hooks/useFormHandler';
+import { H2, P } from "@/components/ui/Typography";
 
 interface FormData {
   userName: string;
@@ -80,9 +81,7 @@ const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
         className="bg-white shadow-md rounded-lg overflow-hidden"
       >
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">
-            📝 Registrar Cliente
-          </h2>
+          <H2 className="mb-4">📝 Registrar Cliente</H2>
           <div className="space-y-4">
             {renderInput("userName", "Nombre de usuario")}
             {renderInput("fullName", "Nombre completo")}
@@ -110,9 +109,9 @@ const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
           </Button>
 
           {error && (
-            <p className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100 text-red-700">
+            <P className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100" variant="danger">
               {error}
-            </p>
+            </P>
           )}
         </div>
       </form>

@@ -7,6 +7,7 @@ import { useFormHandler } from "@/hooks/useFormHandler";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import Card, { CardBody } from "@/components/ui/Card";
+import { H2, P } from "@/components/ui/Typography";
 
 interface TicketPayload {
   quantity: number;
@@ -50,9 +51,7 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
       <Card>
         <form onSubmit={handleSubmit}>
           <CardBody className="space-y-4">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">
-            🎟️ Crear Nuevos Tickets
-          </h2>
+          <H2 className="mb-4">🎟️ Crear Nuevos Tickets</H2>
 
           {/* Usuario */}
           <Select
@@ -109,9 +108,9 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
           </Button>
 
           {error && (
-            <p className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100 text-red-700">
+            <P className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100" variant="danger">
               {error}
-            </p>
+            </P>
           )}
           </CardBody>
         </form>

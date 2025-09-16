@@ -5,6 +5,7 @@ import { usePdf } from "../hooks/usePdf";
 import useCMD from "../hooks/useCMD";
 import Button, { IconButton } from "@/components/ui/Button";
 import Card, { CardBody, CardFooter } from "@/components/ui/Card";
+import { H3, P } from "@/components/ui/Typography";
 
 interface TicketCardProps {
   item: FullTicket
@@ -40,10 +41,8 @@ export default function TicketCard({ item }: TicketCardProps) {
         {/* Cabecera de la tarjeta */}
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-lg font-bold text-slate-800 capitalize">
-              {item.user}
-            </h3>
-            <p className="text-sm text-slate-500">{item.profile}</p>
+            <H3 className="capitalize">{item.user}</H3>
+            <P className="text-sm text-slate-500">{item.profile}</P>
           </div>
           <div className="flex items-center gap-2 bg-slate-100 text-slate-600 text-xs font-mono px-2 py-1 rounded">
             <FaTicketAlt />
@@ -53,17 +52,17 @@ export default function TicketCard({ item }: TicketCardProps) {
 
         {/* Cuerpo de la tarjeta */}
         <div className="mt-4">
-          <p className="text-sm bg-primary-100 text-primary-700 font-semibold px-4 py-2 rounded-md inline-block">
+          <P className="text-sm bg-primary-100 text-primary-700 font-semibold px-4 py-2 rounded-md inline-block">
             Total de Códigos: {item.ticket.codes.length}
-          </p>
+          </P>
         </div>
       </CardBody>
 
       {/* Pie de la tarjeta */}
       <CardFooter className="flex justify-between items-center">
-        <p className="text-xs text-slate-600">
+        <P className="text-xs text-slate-600">
           Creado:  {new Date(item.ticket.createdAt._seconds * 1000).toLocaleDateString()}
-        </p>
+        </P>
         <div className="flex items-center gap-2">
           <Button onClick={() => handlerPrint(item)}>
             <FaPrint />

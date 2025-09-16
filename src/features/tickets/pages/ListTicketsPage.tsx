@@ -2,6 +2,9 @@ import React, { useMemo, useState } from "react";
 import { useTickets } from "@/context/TicketsContext";
 import TicketFilters from "../components/TicketFilters";
 import TicketCard from "../components/TicketCard";
+import { Page, PageHeader } from "@/components/ui/Page";
+import { P } from "@/components/ui/Typography";
+import { PageSectionHeader } from "@/components/ui/Section";
 
 const ListTicketsPage: React.FC = () => {
   const { tickets, loading, error } = useTickets();
@@ -37,12 +40,16 @@ const ListTicketsPage: React.FC = () => {
   }, [tickets, selectedUser, selectedProfile, codeFilter]);
 
   // 🔽 Los returns condicionales van después de hooks
-  if (loading) return <p className="text-center text-slate-500">Cargando tickets...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
-  if (!tickets) return <p>No hay tickets cargados aún...</p>;
+  if (loading) return <Page><P className="text-center" variant="muted">Cargando tickets...</P></Page>;
+  if (error) return <Page><P variant="danger">{error}</P></Page>;
+  if (!tickets) return <Page><P variant="muted">No hay tickets cargados aún...</P></Page>;
 
   return (
-    <div className="p-6">
+    <Page>
+      <PageHeader
+        title="Lista de Tickets"
+        subtitle="Explora y filtra los tickets disponibles."
+      />
       <TicketFilters
         users={users}
         profiles={profiles}
@@ -54,11 +61,11 @@ const ListTicketsPage: React.FC = () => {
         onCodeChange={setCodeFilter}
       />
 
-      <h1 className="text-2xl font-bold mb-4">🎟️ Lista de Tickets</h1>
+  <PageSectionHeader title="🎟️ Resultados" />
 
       {/* Lista de tickets */}
       {filteredTickets.length === 0 ? (
-  <p className="text-slate-600">No hay tickets que coincidan con el filtro.</p>
+  <P variant="muted">No hay tickets que coincidan con el filtro.</P>
       ) : (
         <ul className="space-y-5">
           {filteredTickets.map((item, i) => (
@@ -66,7 +73,7 @@ const ListTicketsPage: React.FC = () => {
           ))}
         </ul>
       )}
-    </div>
+  </Page>
   );
 };
 

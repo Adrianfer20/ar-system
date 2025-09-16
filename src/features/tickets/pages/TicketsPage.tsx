@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import { useTickets } from "@/context/TicketsContext";
 import TicketFilters from "../components/TicketFilters";
 import TicketCard from "../components/TicketCard";
+import { Page, PageHeader } from "@/components/ui/Page";
+import { H2, P } from "@/components/ui/Typography";
 
 const TicketsPage: React.FC = () => {
   const {  tickets, loading, error } = useTickets();
@@ -39,11 +41,11 @@ const TicketsPage: React.FC = () => {
 
 
   return (
-    <div>
-      <header className='mb-6'>
-        <h1 className='text-2xl font-bold capitalize'>Informacion de los Tickets</h1>
-        <p className='text-gray-600'>Bienvenido a la página de registro de tickets.</p>
-      </header>
+    <Page>
+      <PageHeader
+        title="Información de los Tickets"
+        subtitle="Bienvenido a la página de registro de tickets."
+      />
       {/* Filtros siempre visibles */}
       <TicketFilters
         users={users}
@@ -56,24 +58,20 @@ const TicketsPage: React.FC = () => {
         onCodeChange={setCodeFilter}
       />
 
-      <h1 className="text-2xl font-bold mb-4 px-4">🎟️ Lista de Tickets</h1>
+  <H2 className="mb-4">🎟️ Lista de Tickets</H2>
 
       {/* Mensajes de estado en lugar correcto */}
-      {loading && (
-        <p className="text-center text-gray-500">Cargando tickets...</p>
-      )}
-      {error && <p className="text-red-500">{error}</p>}
+      {loading && <P className="text-center" variant="muted">Cargando tickets...</P>}
+      {error && <P variant="danger">{error}</P>}
       {!loading && !error && (!tickets || tickets.length === 0) && (
-        <p className="text-gray-600">No hay tickets cargados aún...</p>
+        <P variant="muted">No hay tickets cargados aún...</P>
       )}
 
       {/* Lista filtrada */}
       {!loading && !error && tickets && (
         <>
           {filteredTickets.length === 0 ? (
-            <p className="text-gray-600">
-              No hay tickets que coincidan con el filtro.
-            </p>
+            <P>No hay tickets que coincidan con el filtro.</P>
           ) : (
             <ul className="space-y-5">
               {filteredTickets.map((item, i) => (
@@ -83,7 +81,7 @@ const TicketsPage: React.FC = () => {
           )}
         </>
       )}
-    </div>
+  </Page>
   );
 };
 

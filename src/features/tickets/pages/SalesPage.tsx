@@ -1,5 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { useTickets } from "@/context/TicketsContext";
+import { Page, PageHeader } from "@/components/ui/Page";
+import Card, { CardHeader as UICardHeader, CardBody as UICardBody } from "@/components/ui/Card";
+import { H3, P } from "@/components/ui/Typography";
+import { PageSection } from "@/components/ui/Section";
 
 // --- TIPOS Y HELPERS ---
 interface Sale {
@@ -22,21 +26,7 @@ function getWeekNumber(date: Date) {
 }
 
 // --- COMPONENTES VISUALES ---
-const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
-  <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>{children}</div>
-);
-
-const CardHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="p-4 border-b border-gray-200">{children}</div>
-);
-
-const CardTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h2 className="text-lg font-semibold text-gray-800">{children}</h2>
-);
-
-const CardContent: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
-  <div className={`p-4 ${className}`}>{children}</div>
-);
+// Usar Card UI compartido para consistencia
 
 // --- COMPONENTE PRINCIPAL ---
 const SalesPage: React.FC = () => {
@@ -99,14 +89,14 @@ const SalesPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Reporte de Ventas</h1>
-        <p className="text-gray-600 mt-1">Análisis de tickets utilizados por el personal.</p>
-      </header>
+    <Page>
+      <PageHeader
+        title="Reporte de Ventas"
+        subtitle="Análisis de tickets utilizados por el personal."
+      />
 
-      {/* Filtros */}
-      <div className="bg-white rounded-lg p-4 grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  {/* Filtros */}
+  <PageSection bodyClassName="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
           <select
@@ -145,13 +135,13 @@ const SalesPage: React.FC = () => {
             />
           </div>
         )}
-      </div>
+  </PageSection>
 
       {/* Ventas */}
       {Object.entries(groupedSales).length === 0 ? (
-        <p className="text-gray-500">No hay ventas para los filtros seleccionados.</p>
+  <P variant="muted">No hay ventas para los filtros seleccionados.</P>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
+  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
           {Object.entries(groupedSales)
             .sort(([a], [b]) => {
               if (mode === "day") {
@@ -164,24 +154,22 @@ const SalesPage: React.FC = () => {
             })
             .map(([period, userGroups]) => (
             <Card key={period}>
-              <CardHeader>
-                <CardTitle>
-                  {mode === "day" ? `Día: ${period}` : `Semana: ${period}`}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+              <UICardHeader>
+                <H3>{mode === "day" ? `Día: ${period}` : `Semana: ${period}`}</H3>
+              </UICardHeader>
+              <UICardBody>
                 {Object.entries(userGroups)
                   .filter(([user]) => selectedUser === "all" || user === selectedUser)
                   .map(([user, salesByProfile]) => (
                     <div key={user} className="mb-4">
-                      <h3 className="font-medium text-gray-800 capitalize">{user}</h3>
+                      <H3 className="capitalize">{user}</H3>
                       {Object.entries(salesByProfile).map(([profile, sales]) => {
                         const key = `${period}-${user}-${profile}`;
                         const isExpanded = expanded[key] || false;
 
                         return (
                           <div key={profile} className="mt-2 bg-gray-50 p-3 rounded border border-gray-200">
-                            <p className="text-gray-600 text-sm">{sales.length} tickets vendidos ({profile})</p>
+                            <P size="sm" variant="muted">{sales.length} tickets vendidos ({profile})</P>
                             <div className="flex items-center justify-between mt-1">
                               <button
                                 onClick={() => toggleExpand(key)}
@@ -204,12 +192,12 @@ const SalesPage: React.FC = () => {
                       })}
                     </div>
                   ))}
-              </CardContent>
+              </UICardBody>
             </Card>
           ))}
         </div>
       )}
-    </div>
+  </Page>
   );
 };
 

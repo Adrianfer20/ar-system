@@ -4,6 +4,7 @@ import CreateClient from './create/CreateClient';
 import CreateProfile from './create/CreateProfile';
 import CreateTickets from './create/CreateTickets';
 import SectionRegister from '../components/SectionRegister';
+import { Page, PageHeader } from '@/components/ui/Page';
 
 const RegisterPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("info");
@@ -16,11 +17,11 @@ const RegisterPage: React.FC = () => {
   ];
 
   return (
-    <div>
-      <header className='mb-6'>
-        <h1 className='text-2xl font-bold capitalize'>Informacion de Registro</h1>
-        <p className='text-gray-600'>Bienvenido a la página de registro de los clientes.</p>
-      </header>
+    <Page>
+      <PageHeader
+        title="Información de Registro"
+        subtitle="Bienvenido a la página de registro de los clientes."
+      />
       <div className="">
         <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
 
@@ -31,7 +32,7 @@ const RegisterPage: React.FC = () => {
           {activeTab === "tickets" && <CreateTickets setActiveTab={setActiveTab} />}
         </div>
       </div>
-    </div>
+    </Page>
   );
 };
 
