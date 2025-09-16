@@ -1,6 +1,6 @@
-// src/features/tickets/pages/CreateTickets.tsx
+// src/features/tickets/pages/create/CreateTickets.tsx
 import React, { useState } from "react";
-import { useTicketsApi } from "@/hooks/useTicketsApi";
+import { useTickets } from "@/context/TicketsContext";
 import { useUsersData } from "../../hooks/useUsersData";
 import { useProfilesData } from "../../hooks/useProfilesData";
 import { useFormHandler } from "@/hooks/useFormHandler";
@@ -15,7 +15,7 @@ interface ChildProps {
 }
 
 const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
-  const { createTicket, getAllTickets } = useTicketsApi();
+  const { createTicket, getAllTickets } = useTickets();
 
   const { users, loading: loadingUsers } = useUsersData();
   const [selectedUser, setSelectedUser] = useState("");

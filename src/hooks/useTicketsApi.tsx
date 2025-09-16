@@ -37,43 +37,50 @@ export function useTicketsApi() {
   // -----------------------------
   const getAllTickets = async (): Promise<FullTicket[]> => {
     setLoading(true);
+    setError(null);
     try {
       const users: User[] = await getUsers();
-      const allTickets: FullTicket[] = [];
 
-      for (const user of users) {
-        const profilesResponse = await apiRequest<Profile[]>(
-          `/users/${user.userName}/profiles`
-        );
-        const profiles = profilesResponse;
-        for (const profile of profiles) {
-          const ticketsResponse = await apiRequest<{ success: boolean; data: any[] }>(
-            `/users/${user.userName}/profiles/${profile.name}/tickets`
+      const perUserTickets = await Promise.all(
+        users.map(async (user) => {
+          const profiles = await apiRequest<Profile[]>(
+            `/users/${user.userName}/profiles`
           );
-          const ticketsData = ticketsResponse.data;
-          ticketsData.forEach((t) => {
-            allTickets.push({
-              user: user.userName,
-              profile: profile.name,
-              server: profile.server,
-              uptime: profile.uptime,
-              ticket: {
-                ticketId: t.id,
-                createdAt: t.createdAt,
-                codes: t.codes.map((c: any) => ({
-                  value: c.code,
-                  used: c.status,
-                  usedAt: c.usedAt
-                })),
-              },
-            });
-          });
-        }
-      }
-      setTickets(allTickets);
-      return allTickets;
+
+          const perProfileTickets = await Promise.all(
+            profiles.map(async (profile) => {
+              const { data: ticketsData } = await apiRequest<{
+                success: boolean;
+                data: any[];
+              }>(`/users/${user.userName}/profiles/${profile.name}/tickets`);
+
+              return ticketsData.map((t) => ({
+                user: user.userName,
+                profile: profile.name,
+                server: profile.server,
+                uptime: profile.uptime,
+                ticket: {
+                  ticketId: t.id,
+                  createdAt: t.createdAt,
+                  codes: t.codes.map((c: any) => ({
+                    value: c.code,
+                    used: c.status,
+                    usedAt: c.usedAt,
+                  })),
+                },
+              })) as FullTicket[];
+            })
+          );
+
+          return perProfileTickets.flat();
+        })
+      );
+
+      const all = perUserTickets.flat();
+      setTickets(all);
+      return all;
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message ?? 'Error obteniendo tickets');
       return [];
     } finally {
       setLoading(false);
@@ -86,6 +93,7 @@ export function useTicketsApi() {
   const getTickets = async (userName: string, profileName: string): Promise<Ticket[]> => {
     if (!userName || !profileName) throw new Error("getTickets requiere userName y profileName");
     setLoading(true);
+    setError(null);
     try {
       return await apiRequest<Ticket[]>(`/users/${userName}/profiles/${profileName}/tickets`);
     } catch (err: any) {
@@ -98,6 +106,7 @@ export function useTicketsApi() {
 
   const getTicket = async (userName: string, profileName: string, ticketId: string): Promise<Ticket | null> => {
     if (!userName || !profileName || !ticketId) throw new Error("getTicket requiere todos los parámetros");
+    setError(null);
     try {
       return await apiRequest<Ticket>(
         `/users/${userName}/profiles/${profileName}/tickets/${ticketId}`
@@ -110,6 +119,7 @@ export function useTicketsApi() {
 
   const createTicket = async (userName: string, profileName: string, data: { quantity: number }) => {
     if (!userName || !profileName) throw new Error("createTicket requiere userName y profileName");
+    setError(null);
     return apiRequest<Ticket>(`/users/${userName}/profiles/${profileName}/tickets`, {
       method: "POST",
       body: JSON.stringify(data),
@@ -118,6 +128,7 @@ export function useTicketsApi() {
 
   const updateCode = async (userName: string, profileName: string, ticketId: string, codeValue: string) => {
     if (!userName || !profileName || !ticketId || !codeValue) throw new Error("updateCode requiere todos los parámetros");
+    setError(null);
     return apiRequest<Ticket>(
       `/users/${userName}/profiles/${profileName}/tickets/${ticketId}/codes/${codeValue}`,
       { method: "PATCH" }
@@ -126,6 +137,7 @@ export function useTicketsApi() {
 
   const updateCodeByValue = async (userName: string, profileName: string, codeValue: string) => {
     if (!userName || !profileName || !codeValue) throw new Error("updateCodeByValue requiere todos los parámetros");
+    setError(null);
     return apiRequest<Ticket>(
       `/users/${userName}/profiles/${profileName}/tickets/codes/${codeValue}`,
       { method: "PATCH" }
@@ -138,6 +150,7 @@ export function useTicketsApi() {
     }
 
     setLoading(true);
+    setError(null);
     try {
       const res = await apiRequest<{ message: string }>(
         `/users/${userName}/profiles/${profileName}/tickets/${ticketId}`,
@@ -166,29 +179,45 @@ export function useTicketsApi() {
   };
 
   const deleteProfile = async (user: string, profile: string, ticketIds: string[]) => {
+    setLoading(true);
+    setError(null);
     try {
-      // Eliminar cada ticket del perfil
-      for (const ticketId of ticketIds) {
-        await apiRequest(`/users/${user}/profiles/${profile}/tickets/${ticketId}`, { method: "DELETE" });
-      }
+      // Eliminar cada ticket del perfil en paralelo
+      await Promise.all(
+        ticketIds.map((ticketId) =>
+          apiRequest(`/users/${user}/profiles/${profile}/tickets/${ticketId}`, { method: "DELETE" })
+        )
+      );
+  // Luego eliminar el perfil en sí en el backend
+  await apiRequest(`/users/${user}/profiles/${profile}`, { method: "DELETE" });
       // Actualizar estado local: remover los tickets eliminados
       setTickets((prev) =>
         prev.filter(
           (t) => !(t.user === user && t.profile === profile && ticketIds.includes(t.ticket.ticketId))
         )
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting profile:', error);
-      setError('Error al eliminar el perfil');
+      setError(error?.message ?? 'Error al eliminar el perfil');
+    } finally {
+      setLoading(false);
     }
   };
 
   const deleteClient = async (user: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      await apiRequest(`/clients/${user}`, { method: "DELETE" });
-      // Actualizar estado local si es necesario
-    } catch (error) {
+      // Eliminar el usuario/cliente en el backend
+      await apiRequest(`/users/${user}`, { method: "DELETE" });
+      // Actualizar estado local: remover todos los tickets del cliente
+      setTickets((prev) => prev.filter((t) => t.user !== user));
+    } catch (error: any) {
       console.error('Error deleting client:', error);
+      setError(error?.message ?? 'Error al eliminar el cliente');
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 

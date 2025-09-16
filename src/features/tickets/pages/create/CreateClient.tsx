@@ -1,11 +1,11 @@
-// src/features/users/pages/RegisterClientPage.tsx
+// src/features/tickets/pages/create/CreateClient.tsx
 import React, { useState, useCallback } from "react";
 import FieldInput from "@/components/ui/FieldInput";
 import FieldOption from "@/components/ui/FieldOption";
 import type { Role } from "@/types/Role";
 import { useUsersApi } from "@/hooks/useUserApi";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { useTicketsApi } from "@/hooks/useTicketsApi";
+import { useTickets } from "@/context/TicketsContext";
 import { useFormHandler } from '@/hooks/useFormHandler';
 
 interface FormData {
@@ -31,7 +31,7 @@ interface ChildProps {
 const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
   const { user: currentUser } = useAuth(); // Renombrado para evitar conflicto
   const { createUser } = useUsersApi();
-  const { getAllTickets } = useTicketsApi();
+  const { getAllTickets } = useTickets();
 
   const [role, setRole] = useState<Role>("client");
   const [formData, setFormData] = useState<FormData>(initialFormState);

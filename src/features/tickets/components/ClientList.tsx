@@ -1,8 +1,8 @@
-// src/features/tickets/components/TicketList.tsx
+// src/features/tickets/components/ClientList.tsx
 import type { FullTicket } from "@/hooks/useTicketsApi";
 import React, { useState } from "react";
 import { BsFolder, BsInfoCircle, BsPersonCircle, BsTicketPerforated } from "react-icons/bs";
-import { useTicketsApi } from '@/hooks/useTicketsApi';
+import { useTickets } from '@/context/TicketsContext';
 
 interface Props {
   tickets: FullTicket[];
@@ -99,7 +99,7 @@ function groupByUserAndProfile(tickets: FullTicket[]): GroupedTickets[] {
 // };
 
 const ClientList: React.FC<Props> = ({ tickets }) => {
-  const { deleteTicket, deleteProfile, deleteClient } = useTicketsApi();
+  const { deleteTicket, deleteProfile, deleteClient } = useTickets();
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
 
   const handleSelectTicket = (ticketId: string) => {
@@ -126,12 +126,16 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
     if (confirm(`¿Eliminar todos los tickets del perfil ${profile} de ${user}?`)) {
       const ticketIds = profileTickets.map(t => t.ticket.ticketId);
       await deleteProfile(user, profile, ticketIds);
+      // Limpiar selección de los tickets eliminados
+      setSelectedTickets(prev => prev.filter(id => !ticketIds.includes(id)));
     }
   };
 
   const handleDeleteClient = async (user: string) => {
     if (confirm(`¿Eliminar cliente ${user} y todos sus tickets?`)) {
       await deleteClient(user);
+      // Limpiar toda la selección (se removieron todos sus tickets)
+      setSelectedTickets([]);
     }
   };
 
@@ -200,9 +204,9 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
                   </div>
 
                   <ul className="space-y-3">
-                    {profileTickets.map((item, i) => (
+                    {profileTickets.map((item) => (
                       <li
-                        key={i}
+                        key={item.ticket.ticketId}
                         className="flex justify-between items-center p-3 rounded-lg transition-colors hover:bg-slate-50"
                       >
                         <div className="flex items-center gap-3">

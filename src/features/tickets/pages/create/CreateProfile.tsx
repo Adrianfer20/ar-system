@@ -1,9 +1,9 @@
-// src/features/profiles/pages/CreateProfile.tsx
+// src/features/tickets/pages/create/CreateProfile.tsx
 import React, { useEffect, useState } from "react";
 import { useProfilesApi } from "@/hooks/useProfilesApi";
 import { useUsersApi } from "@/hooks/useUserApi";
 import type { User } from "@/types/User.type";
-import { useTicketsApi } from "@/hooks/useTicketsApi";
+import { useTickets } from "@/context/TicketsContext";
 import { useFormHandler } from '@/hooks/useFormHandler';
 
 type ProfilePayload = {
@@ -25,7 +25,7 @@ const formDataInitial: ProfilePayload = {
 const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
   // hook para usuarios
   const { getUsers } = useUsersApi();
-  const { getAllTickets } = useTicketsApi();
+  const { getAllTickets } = useTickets();
 
 
   // selected user (userName)
