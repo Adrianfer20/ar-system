@@ -3,6 +3,8 @@ import type { FullTicket } from "@/hooks/useTicketsApi";
 import React, { useState } from "react";
 import { BsFolder, BsInfoCircle, BsPersonCircle, BsTicketPerforated } from "react-icons/bs";
 import { useTickets } from '@/context/TicketsContext';
+import Button from "@/components/ui/Button";
+import Card, { CardHeader, CardBody } from "@/components/ui/Card";
 
 interface Props {
   tickets: FullTicket[];
@@ -141,7 +143,7 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
 
   if (tickets.length === 0) {
     return (
-      <div className="mt-10 flex flex-col items-center justify-center text-center p-8 bg-slate-50 rounded border border-slate-200">
+  <div className="mt-10 flex flex-col items-center justify-center text-center p-8 bg-slate-50 rounded border border-slate-200">
         {/* 2. Reemplazamos el icono */}
         <BsInfoCircle className="h-12 w-12 text-slate-400 mb-4" />
         <h3 className="text-lg font-semibold text-slate-700">
@@ -160,11 +162,8 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
   return (
     <div className="space-y-6">
       {grouped.map((group) => (
-        <div
-          key={group.user}
-          className="bg-white border border-slate-200 rounded shadow-sm overflow-hidden"
-        >
-          <div className="p-5 sm:p-6 bg-slate-50/70 border-b border-slate-200">
+        <Card key={group.user}>
+          <CardHeader>
             <div className="flex items-center gap-4">
               {/* 3. Reemplazamos el icono */}
               <BsPersonCircle className="h-10 w-10 text-slate-500" />
@@ -176,31 +175,29 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
                   {Object.keys(group.profiles).length} perfil(es) encontrado(s)
                 </p>
               </div>
-              <button 
-                onClick={() => handleDeleteClient(group.user)} 
-                className="bg-red-700 text-white px-3 py-1 rounded ml-auto"
-              >
-                Eliminar Cliente
-              </button>
+        <div className="ml-auto">
+                <Button variant="danger" onClick={() => handleDeleteClient(group.user)}>
+                  Eliminar Cliente
+                </Button>
+              </div>
             </div>
-          </div>
+      </CardHeader>
 
-          <div className="divide-y divide-slate-200">
+      <div className="divide-y divide-slate-200">
             {Object.entries(group.profiles).map(
               ([profile, profileTickets]) => (
-                <div key={profile} className="p-5 sm:p-6">
+        <CardBody key={profile}>
                   <div className="flex items-center gap-3 mb-4">
                     {/* 4. Reemplazamos el icono */}
                     <BsFolder className="h-6 w-6 text-primary-600" />
                     <h3 className="text-lg font-semibold text-slate-700">
                       Perfil: {profile}
                     </h3>
-                    <button 
-                      onClick={() => handleDeleteProfile(group.user, profile, profileTickets)} 
-                      className="bg-red-500 text-white px-2 py-1 rounded ml-auto"
-                    >
-                      Eliminar Perfil
-                    </button>
+                    <div className="ml-auto">
+                      <Button variant="danger" onClick={() => handleDeleteProfile(group.user, profile, profileTickets)}>
+                        Eliminar Perfil
+                      </Button>
+                    </div>
                   </div>
 
                   <ul className="space-y-3">
@@ -226,22 +223,21 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
                         <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-3 py-1 rounded-full">
                           {item.ticket.codes.length} códigos
                         </span>
-                      </li>
+          </li>
                     ))}
                   </ul>
-                </div>
+        </CardBody>
               )
             )}
           </div>
-        </div>
+    </Card>
       ))}
       {selectedTickets.length > 0 && (
-        <button 
-          onClick={handleDeleteSelected} 
-          className="bg-red-600 text-white px-4 py-2 rounded mt-4"
-        >
-          Eliminar Seleccionados ({selectedTickets.length})
-        </button>
+        <div>
+          <Button variant="danger" onClick={handleDeleteSelected}>
+            Eliminar Seleccionados ({selectedTickets.length})
+          </Button>
+        </div>
       )}
     </div>
   );

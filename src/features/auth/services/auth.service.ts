@@ -15,8 +15,10 @@ import {
 } from "firebase/auth";
 import {
   collection,
+  doc,
   getDocs,
   query,
+  setDoc,
   where,
 } from "firebase/firestore";
 
@@ -33,6 +35,12 @@ export async function registerUser(
   password: string
 ) {
   return await createUserWithEmailAndPassword(auth, email, password);
+}
+
+export async function saveUserRole(uid: string, role: Role) {
+  // Guardar/actualizar documento del usuario por uid con su rol
+  const ref = doc(collection(db, USERS_COLLECTION), uid);
+  await setDoc(ref, { uid, role }, { merge: true });
 }
 
 export async function getUserRole(uid: string): Promise<Role | null> {

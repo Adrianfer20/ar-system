@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import Button from "@/components/ui/Button";
 import FieldInput from "@/components/ui/FieldInput";
-import FieldOption from "@/components/ui/FieldOption";
+import Select from "@/components/ui/Select";
 import type { Role } from "@/types/Role";
 
 
@@ -35,38 +35,36 @@ const RegisterForm: React.FC = () => {
 
 
     return (
-        <form onSubmit={handleSubmit} className="min-w-sm rounded shadow space-y-6 px-4 py-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
 
             <FieldInput
-                label="Email"
+                name="email"
+                label="Correo"
                 type="email"
                 value={email}
                 setValue={setEmail}
             />
 
             <FieldInput
+                name="password"
                 label="Contraseña"
                 type="password"
                 value={password}
                 setValue={setPassword}
             />
 
-            <FieldOption
-                value={role}
-                setValue={(value: string) => setRole(value as Role)}
+            <Select
                 label="Rol"
+                value={role}
+                onChangeValue={(value: string) => setRole(value as Role)}
                 options={[
                     { value: "client", label: "Cliente" },
                     { value: "admin", label: "Admin" },
                 ]}
-            />
+              />
             {error && <p className="text-red-600 text-sm">{error}</p>}
             {success && <p className="text-green-600 text-sm">{success}</p>}
-            <Button
-                type="submit"
-                disabled={isLoading}
-                className="bg-black text-white px-4 py-2 rounded disabled:opacity-50"
-            >
+            <Button type="submit" disabled={isLoading} >
                 {isLoading ? "Cargando..." : "Registrar"}
             </Button>
         </form>

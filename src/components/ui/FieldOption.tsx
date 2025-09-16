@@ -21,7 +21,7 @@ const FieldOption: React.FC<FieldOptionProps> = ({
   required = false,
 }) => {
   return (
-    <div className="flex justify-between items-center text-gray-700 rounded border border-gray-400 shadow focus-within:border-2 focus-within:border-gray-700">
+    <div className="flex justify-between items-center text-slate-700 rounded border border-slate-300 shadow focus-within:border-2 focus-within:border-slate-700">
       <span className="uppercase font-bold px-2">{label}:</span>
       <label className="relative block w-full">
         <select

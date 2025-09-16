@@ -1,21 +1,24 @@
 import React from "react";
 import clsx from "clsx";
 
-type ButtonVariant = "primary" | "outline";
+type ButtonVariant = "primary" | "outline" | "danger";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   isLoading?: boolean;
+  fullWidth?: boolean;
 }
 
 const baseClasses =
-  "w-full block items-center gap-2 rounded-sm px-8 py-3 font-bold cursor-pointer focus:ring-3 focus:outline-hidden disabled:opacity-50 disabled:cursor-not-allowed transition";
+  "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "border border-indigo-600 bg-indigo-600 text-white hover:bg-transparent hover:text-indigo-600",
+    "bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500",
   outline:
-    "border border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white",
+    "border border-primary-600 text-primary-700 hover:bg-primary-600 hover:text-white focus:ring-primary-500",
+  danger:
+    "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -24,11 +27,14 @@ export const Button: React.FC<ButtonProps> = ({
   isLoading = false,
   disabled,
   className,
+  fullWidth = false,
+  type = "button",
   ...props
 }) => {
   return (
     <button
-      className={clsx(baseClasses, variants[variant], className)}
+      type={type}
+      className={clsx(baseClasses, variants[variant], fullWidth && "w-full", className)}
       disabled={disabled || isLoading}
       {...props}
     >
@@ -36,4 +42,21 @@ export const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
+
+export const IconButton: React.FC<
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { ariaLabel: string }
+> = ({ ariaLabel, className, type = "button", children, ...props }) => (
+  <button
+    type={type}
+    aria-label={ariaLabel}
+    className={clsx(
+      "inline-flex items-center justify-center rounded-full p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
 export default Button;

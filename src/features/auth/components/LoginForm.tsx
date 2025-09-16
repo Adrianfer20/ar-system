@@ -29,15 +29,15 @@ const LoginForm: React.FC = () => {
 
 
     return (
-        <form onSubmit={handleSubmit} className="min-w-sm rounded shadow space-y-6 px-4 py-8">
-            <FieldInput label="correo" type="email" value={email} setValue={setEmail} />
-            <FieldInput label="contraseña" type="password" value={password} setValue={setPassword} />
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <FieldInput name="email" label="Correo" type="email" value={email} setValue={setEmail} />
+            <FieldInput name="password" label="Contraseña" type="password" value={password} setValue={setPassword} />
 
             <Button type="submit" disabled={isLoading} >
                 {isLoading ? "Ingresando..." : "Ingresar"}
             </Button>
 
-            {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+            {error && <p className="text-center text-red-600 text-sm">{error}</p>}
 
         </form>
     );

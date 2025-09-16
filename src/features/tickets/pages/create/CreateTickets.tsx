@@ -4,7 +4,9 @@ import { useTickets } from "@/context/TicketsContext";
 import { useUsersData } from "../../hooks/useUsersData";
 import { useProfilesData } from "../../hooks/useProfilesData";
 import { useFormHandler } from "@/hooks/useFormHandler";
-import SelectInput from "../../components/SelectInput";
+import Select from "@/components/ui/Select";
+import Button from "@/components/ui/Button";
+import Card, { CardBody } from "@/components/ui/Card";
 
 interface TicketPayload {
   quantity: number;
@@ -45,51 +47,54 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
 
   return (
     <div className="max-w-lg mx-auto">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded-lg overflow-hidden"
-      >
-        <div className="p-6 space-y-4">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+      <Card>
+        <form onSubmit={handleSubmit}>
+          <CardBody className="space-y-4">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">
             🎟️ Crear Nuevos Tickets
           </h2>
 
           {/* Usuario */}
-          <SelectInput
+          <Select
             label="Usuario"
             value={selectedUser}
-            onChange={(val) => {
+            onChangeValue={(val) => {
               setSelectedUser(val);
               setSelectedProfile("");
             }}
             options={users.map((u) => ({ label: u.userName, value: u.userName }))}
+            placeholder="Selecciona un usuario"
+            required
           />
 
           {/* Perfil */}
           {selectedUser && (
-            <SelectInput
+            <Select
               label="Perfil"
               value={selectedProfile}
-              onChange={setSelectedProfile}
+              onChangeValue={setSelectedProfile}
               options={profiles.map((p) => ({ label: p.name, value: p.name }))}
+              placeholder="Selecciona un perfil"
+              required
             />
           )}
 
           {/* Cantidad */}
-          <SelectInput
+          <Select
             label="Cantidad"
             value={quantity.toString()}
-            onChange={(val) => setQuantity(Number(val))}
+            onChangeValue={(val) => setQuantity(Number(val))}
             options={[84, 246, 472, 948].map((q) => ({
               label: q.toString(),
               value: q.toString(),
             }))}
+            required
           />
 
           {/* Botón */}
-          <button
+          <Button
             type="submit"
-            className="w-full bg-primary-600 text-white py-2 px-4 rounded-md font-semibold shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed"
+            fullWidth
             disabled={
               !selectedUser ||
               !selectedProfile ||
@@ -98,17 +103,19 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
               loadingUsers ||
               loadingProfiles
             }
+            isLoading={creating}
           >
-            {creating ? "Creando..." : "Crear Tickets"}
-          </button>
+            Crear Tickets
+          </Button>
 
           {error && (
             <p className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100 text-red-700">
               {error}
             </p>
           )}
-        </div>
-      </form>
+          </CardBody>
+        </form>
+      </Card>
     </div>
   );
 };

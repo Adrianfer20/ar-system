@@ -5,6 +5,10 @@ import { useUsersApi } from "@/hooks/useUserApi";
 import type { User } from "@/types/User.type";
 import { useTickets } from "@/context/TicketsContext";
 import { useFormHandler } from '@/hooks/useFormHandler';
+import Card, { CardBody } from "@/components/ui/Card";
+import Select from "@/components/ui/Select";
+import FieldInput from "@/components/ui/FieldInput";
+import Button from "@/components/ui/Button";
 
 type ProfilePayload = {
   name: string;
@@ -87,104 +91,74 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // ejecuta solo al montar
 
-  // handlers
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm((s) => ({ ...s, [name]: value }));
-  };
+  // handlers eliminados tras refactor a FieldInput/Select
 
   return (
     <div className="max-w-xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold text-center mb-4">Registrar Perfil Hotspot</h2>
+      <h2 className="text-2xl font-bold text-slate-800 text-center mb-4">Registrar Perfil Hotspot</h2>
 
       {/* usuarios loading / error */}
       {loadingUsers ? (
-        <p className="mb-4 text-gray-500">Cargando usuarios...</p>
+        <p className="mb-4 text-slate-500">Cargando usuarios...</p>
       ) : usersError ? (
         <p className="mb-4 text-red-500">{usersError}</p>
       ) : null}
 
-      <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-4">
-        {/* Select usuario */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
-          <select
+      <Card>
+        <CardBody className="space-y-4">
+          {/* Select usuario */}
+          <Select
+            label="Usuario"
             value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"
+            onChangeValue={(v) => setSelectedUser(v)}
+            options={[
+              { value: "", label: "-- Selecciona un usuario --" },
+              ...users.map((u) => ({ value: u.userName, label: `${u.userName}${u.fullName ? ` — ${u.fullName}` : ""}` }))
+            ]}
             required
-          >
-            <option value="">-- Selecciona un usuario --</option>
-            {users.map((u) => (
-              <option key={u.userName} value={u.userName} className="capitalize">
-                {u.userName} {u.fullName ? `— ${u.fullName}` : ""}
-              </option>
-            ))}
-          </select>
-        </div>
+          />
 
-        {/* name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del perfil</label>
-          <input
+          {/* name */}
+          <FieldInput
             name="name"
+            type="text"
+            label="Nombre del perfil"
             value={form.name}
-            onChange={handleInput}
-            placeholder="Ej: 1hr"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"
-            required
+            setValue={(v) => setForm((s) => ({ ...s, name: v }))}
           />
-        </div>
 
-        {/* uptime */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Uptime</label>
-          <input
+          {/* uptime */}
+          <FieldInput
             name="uptime"
+            type="text"
+            label="Uptime"
             value={form.uptime}
-            onChange={handleInput}
-            placeholder="Ej: 01:00:00"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"
-            required
+            setValue={(v) => setForm((s) => ({ ...s, uptime: v }))}
           />
-        </div>
 
-        {/* server */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Servidor</label>
-          <input
+          {/* server (disabled) */}
+          <FieldInput
             name="server"
+            type="text"
+            label="Servidor"
             value={form.server}
-            onChange={handleInput}
-            placeholder="Ej: Wifi Por Hora"
-            className="mt-1 block w-full border-gray-400 bg-gray-400 rounded-md shadow-sm p-2"
+            setValue={(v) => setForm((s) => ({ ...s, server: v }))}
             disabled
           />
-        </div>
 
-        {/* mensajes */}
-        {submitError && <p className="text-red-500 text-sm">{submitError}</p>}
+          {/* mensajes */}
+          {submitError && <p className="text-red-600 text-sm">{submitError}</p>}
 
-        <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={creating}
-            className="flex-1 py-2 px-4 bg-[var(--color-primary-600)] text-white rounded-md disabled:opacity-60"
-          >
-            {creating ? "Creando perfil..." : "Crear Perfil"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              setForm({ name: "", uptime: "01:00:00", server: "Wifi Por Hora" })
-            }
-            className="py-2 px-4 border rounded-md"
-          >
-            Limpiar
-          </button>
-        </div>
-      </form>
+          <div className="flex gap-2">
+            <Button type="submit" onClick={handleSubmit as any} fullWidth isLoading={creating} disabled={creating}>
+              Crear Perfil
+            </Button>
+            <Button type="button" variant="outline" onClick={() => setForm(formDataInitial)}>
+              Limpiar
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
     </div>
   );
 };

@@ -1,7 +1,8 @@
 // src/features/tickets/pages/create/CreateClient.tsx
 import React, { useState, useCallback } from "react";
 import FieldInput from "@/components/ui/FieldInput";
-import FieldOption from "@/components/ui/FieldOption";
+import Select from "@/components/ui/Select";
+import Button from "@/components/ui/Button";
 import type { Role } from "@/types/Role";
 import { useUsersApi } from "@/hooks/useUserApi";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -79,21 +80,22 @@ const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
         className="bg-white shadow-md rounded-lg overflow-hidden"
       >
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">
             📝 Registrar Cliente
           </h2>
           <div className="space-y-4">
             {renderInput("userName", "Nombre de usuario")}
             {renderInput("fullName", "Nombre completo")}
 
-            <FieldOption
-              value={role}
-              setValue={(value: string) => setRole(value as Role)}
+            <Select
               label="Rol"
+              value={role}
+              onChangeValue={(value: string) => setRole(value as Role)}
               options={[
                 { value: "client", label: "Cliente" },
                 { value: "admin", label: "Admin" },
               ]}
+              required
             />
 
             {renderInput("email", "Correo electrónico", "email")}
@@ -102,17 +104,10 @@ const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
           </div>
         </div>
 
-        <div className="bg-gray-50 px-6 py-4">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 px-4 bg-primary-600 text-white font-semibold rounded-md 
-                       hover:bg-primary-700 transition shadow-sm 
-                       focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 
-                       disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            {loading ? "Registrando..." : "Registrar Cliente"}
-          </button>
+  <div className="bg-slate-50 px-6 py-4">
+          <Button type="submit" fullWidth isLoading={loading} disabled={loading}>
+            Registrar Cliente
+          </Button>
 
           {error && (
             <p className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100 text-red-700">

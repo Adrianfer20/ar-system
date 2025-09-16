@@ -4,9 +4,10 @@ const FieldInput = (params: {
   value: string, 
   setValue: (value: string) => void, 
   type: string, 
-  label: string 
+  label: string,
+  disabled?: boolean,
 }) => {
-  const { value, setValue, type, label, name } = params;
+  const { value, setValue, type, label, name, disabled = false } = params;
 
   return (
     <div>
@@ -19,11 +20,12 @@ const FieldInput = (params: {
           value={value}
           onChange={(e) => setValue(e.target.value)}
           required
-          className="h-12 peer mt-0.5 w-full rounded border border-gray-400 shadow px-2"
+          className="h-12 peer mt-0.5 w-full rounded border border-slate-300 shadow px-2"
           autoComplete="off"
+          disabled={disabled}
         />
 
-        <span className="absolute inset-y-0 start-3 -translate-y-5 bg-gray-200 px-1 font-medium text-gray-700 transition-transform peer-placeholder-shown:translate-y-0 peer-focus:-translate-y-7">
+        <span className="absolute inset-y-0 start-3 -translate-y-5 bg-slate-100 px-1 font-medium text-slate-700 transition-transform peer-placeholder-shown:translate-y-0 peer-focus:-translate-y-7">
           {label}
         </span>
       </label>

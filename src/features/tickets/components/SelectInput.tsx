@@ -27,13 +27,13 @@ const SelectInput: React.FC<SelectInputProps> = ({
 }) => {
   return (
     <div className="w-full">
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-slate-700">
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300
+        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300
                    focus:outline-none focus:ring-primary-500 focus:border-primary-500
                    sm:text-sm rounded-md capitalize"
         disabled={disabled}
