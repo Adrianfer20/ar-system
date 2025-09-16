@@ -7,8 +7,9 @@ import type { Role } from "@/types/Role";
 import { useUsersApi } from "@/hooks/useUserApi";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useTickets } from "@/context/TicketsContext";
-import { useFormHandler } from '@/hooks/useFormHandler';
+import { useFormHandler } from "@/hooks/useFormHandler";
 import { H2, P } from "@/components/ui/Typography";
+import Card, { CardBody } from "@/components/ui/Card";
 
 interface FormData {
   userName: string;
@@ -31,7 +32,7 @@ interface ChildProps {
 }
 
 const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
-  const { user: currentUser } = useAuth(); // Renombrado para evitar conflicto
+  const { user: currentUser } = useAuth();
   const { createUser } = useUsersApi();
   const { getAllTickets } = useTickets();
 
@@ -48,10 +49,10 @@ const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
       getAllTickets();
     },
     onSuccess: () => setActiveTab("info"),
-    successMessage: 'El Cliente se ha registrado correctamente',
+    successMessage: "El Cliente se ha registrado correctamente",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     submitForm(formData);
   };
@@ -76,13 +77,11 @@ const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
 
   return (
     <div className="max-w-lg mx-auto">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white shadow-md rounded-lg overflow-hidden"
-      >
-        <div className="p-6">
-          <H2 className="mb-4">📝 Registrar Cliente</H2>
-          <div className="space-y-4">
+      <Card>
+        <form onSubmit={handleSubmit} noValidate>
+          <CardBody className="space-y-4">
+            <H2 className="mb-4">Registrar cliente</H2>
+
             {renderInput("userName", "Nombre de usuario")}
             {renderInput("fullName", "Nombre completo")}
 
@@ -100,21 +99,20 @@ const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
             {renderInput("email", "Correo electrónico", "email")}
             {renderInput("password", "Contraseña", "password")}
             {renderInput("tlfn", "Teléfono")}
+          </CardBody>
+
+          <div className="bg-slate-50 px-6 py-4" aria-live="polite">
+            <Button type="submit" fullWidth isLoading={loading} disabled={loading}>
+              Registrar cliente
+            </Button>
+            {error && (
+              <P className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100" variant="danger">
+                {error}
+              </P>
+            )}
           </div>
-        </div>
-
-  <div className="bg-slate-50 px-6 py-4">
-          <Button type="submit" fullWidth isLoading={loading} disabled={loading}>
-            Registrar Cliente
-          </Button>
-
-          {error && (
-            <P className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100" variant="danger">
-              {error}
-            </P>
-          )}
-        </div>
-      </form>
+        </form>
+      </Card>
     </div>
   );
 };

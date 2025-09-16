@@ -56,7 +56,7 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
     successMessage: 'El perfil se ha creado correctamente',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     submitForm(form);
   };
@@ -76,11 +76,10 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
         const u = await getUsers();
         if (!mounted) return;
         setUsers(u);
-        // si hay al menos 1 usuario, opcionalmente seleccionar el primero
         if (u.length > 0 && !selectedUser) setSelectedUser(u[0].userName);
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!mounted) return;
-        setUsersError(err?.message ?? "Error al cargar usuarios");
+        setUsersError(err instanceof Error ? err.message : "Error al cargar usuarios");
       } finally {
         if (!mounted) return;
         setLoadingUsers(false);
@@ -90,75 +89,105 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
       mounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // ejecuta solo al montar
-
-  // handlers eliminados tras refactor a FieldInput/Select
+  }, []);
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <H2 className="text-center mb-4">Registrar Perfil Hotspot</H2>
-
-      {/* usuarios loading / error */}
-      {loadingUsers ? (
-        <P className="mb-4" variant="muted">Cargando usuarios...</P>
-      ) : usersError ? (
-        <P className="mb-4" variant="danger">{usersError}</P>
-      ) : null}
-
+    <div className="max-w-lg mx-auto">
       <Card>
-        <CardBody className="space-y-4">
-          {/* Select usuario */}
-          <Select
-            label="Usuario"
-            value={selectedUser}
-            onChangeValue={(v) => setSelectedUser(v)}
-            options={[
-              { value: "", label: "-- Selecciona un usuario --" },
-              ...users.map((u) => ({ value: u.userName, label: `${u.userName}${u.fullName ? ` — ${u.fullName}` : ""}` }))
-            ]}
-            required
-          />
+        <form onSubmit={handleSubmit} noValidate aria-busy={loadingUsers || creating}>
+          <CardBody className="min-w-0 space-y-4">
+            <H2 className="mb-4">Registrar perfil hotspot</H2>
 
-          {/* name */}
-          <FieldInput
-            name="name"
-            type="text"
-            label="Nombre del perfil"
-            value={form.name}
-            setValue={(v) => setForm((s) => ({ ...s, name: v }))}
-          />
+            {/* Estado de error arriba del formulario */}
+            {usersError && (
+              <P className="-mt-2" variant="danger">{usersError}</P>
+            )}
 
-          {/* uptime */}
-          <FieldInput
-            name="uptime"
-            type="text"
-            label="Uptime"
-            value={form.uptime}
-            setValue={(v) => setForm((s) => ({ ...s, uptime: v }))}
-          />
+            {loadingUsers ? (
+              // Skeletons para mantener layout estable
+        <div className="space-y-4 animate-pulse">
+                <div>
+          <div className="h-4 w-24 sm:w-36 bg-slate-200 rounded mb-2" />
+          <div className="h-10 w-full max-w-full bg-slate-200 rounded" />
+                </div>
+                <div>
+          <div className="h-4 w-28 sm:w-40 bg-slate-200 rounded mb-2" />
+          <div className="h-10 w-full max-w-full bg-slate-200 rounded" />
+                </div>
+                <div>
+          <div className="h-4 w-20 sm:w-24 bg-slate-200 rounded mb-2" />
+          <div className="h-10 w-full max-w-full bg-slate-200 rounded" />
+                </div>
+                <div>
+          <div className="h-4 w-24 sm:w-28 bg-slate-200 rounded mb-2" />
+          <div className="h-10 w-full max-w-full bg-slate-200 rounded" />
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Select usuario */}
+                <Select
+                  label="Usuario"
+                  value={selectedUser}
+                  onChangeValue={(v) => setSelectedUser(v)}
+                  options={[
+                    { value: "", label: "-- Selecciona un usuario --" },
+                    ...users.map((u) => ({ value: u.userName, label: `${u.userName}${u.fullName ? ` — ${u.fullName}` : ""}` }))
+                  ]}
+                  placeholder="Selecciona un usuario"
+                  disabled={loadingUsers}
+                  required
+                />
 
-          {/* server (disabled) */}
-          <FieldInput
-            name="server"
-            type="text"
-            label="Servidor"
-            value={form.server}
-            setValue={(v) => setForm((s) => ({ ...s, server: v }))}
-            disabled
-          />
+                {/* name */}
+                <FieldInput
+                  name="name"
+                  type="text"
+                  label="Nombre del perfil"
+                  value={form.name}
+                  setValue={(v) => setForm((s) => ({ ...s, name: v }))}
+                  disabled={loadingUsers}
+                />
 
-          {/* mensajes */}
-          {submitError && <P className="text-sm" variant="danger">{submitError}</P>}
+                {/* uptime */}
+                <FieldInput
+                  name="uptime"
+                  type="text"
+                  label="Uptime"
+                  value={form.uptime}
+                  setValue={(v) => setForm((s) => ({ ...s, uptime: v }))}
+                  disabled={loadingUsers}
+                />
 
-          <div className="flex gap-2">
-            <Button type="submit" onClick={handleSubmit as any} fullWidth isLoading={creating} disabled={creating}>
-              Crear Perfil
-            </Button>
-            <Button type="button" variant="outline" onClick={() => setForm(formDataInitial)}>
-              Limpiar
-            </Button>
+                {/* server (disabled) */}
+                <FieldInput
+                  name="server"
+                  type="text"
+                  label="Servidor"
+                  value={form.server}
+                  setValue={(v) => setForm((s) => ({ ...s, server: v }))}
+                  disabled
+                />
+              </>
+            )}
+          </CardBody>
+
+          <div className="bg-slate-50 px-6 py-4" aria-live="polite">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button type="submit" fullWidth isLoading={creating} disabled={creating || loadingUsers}>
+                Crear perfil
+              </Button>
+              <Button type="button" variant="outline" onClick={() => setForm(formDataInitial)} disabled={loadingUsers}>
+                Limpiar
+              </Button>
+            </div>
+            {submitError && (
+              <P className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100" variant="danger">
+                {submitError}
+              </P>
+            )}
           </div>
-        </CardBody>
+        </form>
       </Card>
     </div>
   );

@@ -23,7 +23,7 @@ const RegisterPage: React.FC = () => {
         subtitle="Bienvenido a la página de registro de los clientes."
       />
       <div className="">
-        <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+  <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} variant="justified" />
 
         <div className="mt-6">
           {activeTab === "info" && <SectionRegister />}

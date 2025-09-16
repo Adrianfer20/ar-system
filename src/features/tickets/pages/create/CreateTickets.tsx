@@ -49,33 +49,49 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
   return (
     <div className="max-w-lg mx-auto">
       <Card>
-        <form onSubmit={handleSubmit}>
-          <CardBody className="space-y-4">
-          <H2 className="mb-4">🎟️ Crear Nuevos Tickets</H2>
+  <form onSubmit={handleSubmit} noValidate aria-busy={loadingUsers || loadingProfiles || creating}>
+          <CardBody className="min-w-0 space-y-4">
+          <H2 className="mb-4">Crear nuevos tickets</H2>
 
-          {/* Usuario */}
-          <Select
-            label="Usuario"
-            value={selectedUser}
-            onChangeValue={(val) => {
-              setSelectedUser(val);
-              setSelectedProfile("");
-            }}
-            options={users.map((u) => ({ label: u.userName, value: u.userName }))}
-            placeholder="Selecciona un usuario"
-            required
-          />
+          {/* Usuario o skeleton */}
+          {loadingUsers ? (
+            <div className="space-y-2 animate-pulse">
+              <div className="h-4 w-32 bg-slate-200 rounded" />
+              <div className="h-10 w-full bg-slate-200 rounded" />
+            </div>
+          ) : (
+            <Select
+              label="Usuario"
+              value={selectedUser}
+              onChangeValue={(val) => {
+                setSelectedUser(val);
+                setSelectedProfile("");
+              }}
+              options={users.map((u) => ({ label: u.userName, value: u.userName }))}
+              placeholder="Selecciona un usuario"
+              disabled={loadingUsers}
+              required
+            />
+          )}
 
           {/* Perfil */}
           {selectedUser && (
-            <Select
-              label="Perfil"
-              value={selectedProfile}
-              onChangeValue={setSelectedProfile}
-              options={profiles.map((p) => ({ label: p.name, value: p.name }))}
-              placeholder="Selecciona un perfil"
-              required
-            />
+            loadingProfiles ? (
+              <div className="space-y-2 animate-pulse">
+                <div className="h-4 w-28 bg-slate-200 rounded" />
+                <div className="h-10 w-full bg-slate-200 rounded" />
+              </div>
+            ) : (
+              <Select
+                label="Perfil"
+                value={selectedProfile}
+                onChangeValue={setSelectedProfile}
+                options={profiles.map((p) => ({ label: p.name, value: p.name }))}
+                placeholder="Selecciona un perfil"
+                disabled={loadingProfiles}
+                required
+              />
+            )
           )}
 
           {/* Cantidad */}
@@ -89,30 +105,31 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
             }))}
             required
           />
-
-          {/* Botón */}
-          <Button
-            type="submit"
-            fullWidth
-            disabled={
-              !selectedUser ||
-              !selectedProfile ||
-              quantity < 1 ||
-              creating ||
-              loadingUsers ||
-              loadingProfiles
-            }
-            isLoading={creating}
-          >
-            Crear Tickets
-          </Button>
-
-          {error && (
-            <P className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100" variant="danger">
-              {error}
-            </P>
-          )}
           </CardBody>
+
+          <div className="bg-slate-50 px-6 py-4" aria-live="polite">
+            <Button
+              type="submit"
+              fullWidth
+              disabled={
+                !selectedUser ||
+                !selectedProfile ||
+                quantity < 1 ||
+                creating ||
+                loadingUsers ||
+                loadingProfiles
+              }
+              isLoading={creating}
+            >
+              Crear tickets
+            </Button>
+
+            {error && (
+              <P className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100" variant="danger">
+                {error}
+              </P>
+            )}
+          </div>
         </form>
       </Card>
     </div>
