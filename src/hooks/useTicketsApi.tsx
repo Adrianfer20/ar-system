@@ -165,6 +165,32 @@ export function useTicketsApi() {
     }
   };
 
+  const deleteProfile = async (user: string, profile: string, ticketIds: string[]) => {
+    try {
+      // Eliminar cada ticket del perfil
+      for (const ticketId of ticketIds) {
+        await apiRequest(`/users/${user}/profiles/${profile}/tickets/${ticketId}`, { method: "DELETE" });
+      }
+      // Actualizar estado local: remover los tickets eliminados
+      setTickets((prev) =>
+        prev.filter(
+          (t) => !(t.user === user && t.profile === profile && ticketIds.includes(t.ticket.ticketId))
+        )
+      );
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      setError('Error al eliminar el perfil');
+    }
+  };
+
+  const deleteClient = async (user: string) => {
+    try {
+      await apiRequest(`/clients/${user}`, { method: "DELETE" });
+      // Actualizar estado local si es necesario
+    } catch (error) {
+      console.error('Error deleting client:', error);
+    }
+  };
 
   return {
     tickets,
@@ -177,5 +203,7 @@ export function useTicketsApi() {
     updateCode,
     updateCodeByValue,
     deleteTicket,
+    deleteProfile,
+    deleteClient,
   };
 }
