@@ -5,8 +5,8 @@ import FieldOption from "@/components/ui/FieldOption";
 import type { Role } from "@/types/Role";
 import { useUsersApi } from "@/hooks/useUserApi";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import toast from "react-hot-toast";
 import { useTicketsApi } from "@/hooks/useTicketsApi";
+import { useFormHandler } from '@/hooks/useFormHandler';
 
 interface FormData {
   userName: string;
@@ -28,41 +28,35 @@ interface ChildProps {
   setActiveTab: React.Dispatch<React.SetStateAction<string>>;
 }
 
-
 const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
-  const { user } = useAuth();
-  const { createUser, loading } = useUsersApi();
+  const { user: currentUser } = useAuth(); // Renombrado para evitar conflicto
+  const { createUser } = useUsersApi();
   const { getAllTickets } = useTicketsApi();
-
 
   const [role, setRole] = useState<Role>("client");
   const [formData, setFormData] = useState<FormData>(initialFormState);
-  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
+
+  const { handleSubmit: submitForm, loading, error } = useFormHandler({
+    onSubmit: async (data: FormData) => {
+      if (!currentUser || currentUser.role !== "admin") {
+        throw new Error("Solo un admin puede registrar nuevos usuarios.");
+      }
+      await createUser({ ...data, role });
+      setFormData(initialFormState);
+      getAllTickets();
+    },
+    onSuccess: () => setActiveTab("info"),
+    successMessage: 'El Cliente se ha registrado correctamente',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitForm(formData);
+  };
 
   const handleChange = useCallback((name: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFeedback(null);
-
-    try {
-      console.log(user)
-      if (!user || user.role !== "admin") {
-        throw new Error("Solo un admin puede registrar nuevos usuarios.");
-      }
-
-      await createUser({ ...formData, role });
-      setFormData(initialFormState);
-      getAllTickets();
-      toast.success('El Cliente se ha registrado correctamente');
-      setActiveTab("info");
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "❌ Error al registrar el cliente.";
-      setFeedback({ type: "error", message });
-    }
-  };
 
   const renderInput = (
     name: keyof FormData,
@@ -120,14 +114,9 @@ const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
             {loading ? "Registrando..." : "Registrar Cliente"}
           </button>
 
-          {feedback && (
-            <p
-              className={`mt-3 text-center text-sm font-medium p-2 rounded-md ${feedback.type === "error"
-                ? "bg-red-100 text-red-700"
-                : "bg-green-100 text-green-700"
-                }`}
-            >
-              {feedback.message}
+          {error && (
+            <p className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100 text-red-700">
+              {error}
             </p>
           )}
         </div>

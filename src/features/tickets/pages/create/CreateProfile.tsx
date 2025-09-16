@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useProfilesApi } from "@/hooks/useProfilesApi";
 import { useUsersApi } from "@/hooks/useUserApi";
 import type { User } from "@/types/User.type";
-import toast from "react-hot-toast";
 import { useTicketsApi } from "@/hooks/useTicketsApi";
+import { useFormHandler } from '@/hooks/useFormHandler';
 
 type ProfilePayload = {
   name: string;
@@ -39,10 +39,22 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
   // form local
   const [form, setForm] = useState<ProfilePayload>(formDataInitial);
 
-  // estado de creación
-  const [creating, setCreating] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { handleSubmit: submitForm, loading: creating, error: submitError } = useFormHandler({
+    onSubmit: async (data: ProfilePayload) => {
+      if (!selectedUser) throw new Error("Debes seleccionar un usuario.");
+      if (!data.name.trim() || !data.uptime.trim()) throw new Error("Nombre de perfil y uptime son obligatorios.");
+      await createProfile(selectedUser, data);
+      setForm(formDataInitial);
+      getAllTickets();
+    },
+    onSuccess: () => setActiveTab("info"),
+    successMessage: 'El perfil se ha creado correctamente',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitForm(form);
+  };
 
   // Hook de perfiles — lo inicializamos con selectedUser.
   // (Tu hook debería aceptar userName como parámetro y exponer createProfile)
@@ -79,44 +91,6 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
   const handleInput = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((s) => ({ ...s, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitError(null);
-    setSuccess(null);
-
-    if (!selectedUser) {
-      setSubmitError("Debes seleccionar un usuario.");
-      return;
-    }
-    if (!form.name.trim() || !form.uptime.trim()) {
-      setSubmitError("Nombre de perfil y uptime son obligatorios.");
-      return;
-    }
-
-    try {
-      setCreating(true);
-      //usar createProfile del hook (que hace POST /users/:userName/profiles)
-      const userName = selectedUser;
-      const data = {
-        name: form.name.trim(),
-        uptime: form.uptime.trim(),
-        server: form.server.trim(),
-      }
-      await createProfile(userName, data);
-
-
-      setForm(formDataInitial);
-      getAllTickets();
-      toast.success('El perfil se ha creado correctamente');
-      setActiveTab("info");
-    } catch (err: any) {
-      setSubmitError(err?.message ?? "Error al crear perfil.");
-      console.error("Error crear perfil:", err);
-    } finally {
-      setCreating(false);
-    }
   };
 
   return (
@@ -190,7 +164,6 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
 
         {/* mensajes */}
         {submitError && <p className="text-red-500 text-sm">{submitError}</p>}
-        {success && <p className="text-green-600 text-sm">{success}</p>}
 
         <div className="flex gap-2">
           <button

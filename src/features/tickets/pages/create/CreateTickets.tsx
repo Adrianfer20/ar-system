@@ -1,10 +1,14 @@
 // src/features/tickets/pages/CreateTickets.tsx
-import React, { useState, useCallback } from "react";
-import toast from "react-hot-toast";
+import React, { useState } from "react";
 import { useTicketsApi } from "@/hooks/useTicketsApi";
 import { useUsersData } from "../../hooks/useUsersData";
 import { useProfilesData } from "../../hooks/useProfilesData";
+import { useFormHandler } from "@/hooks/useFormHandler";
 import SelectInput from "../../components/SelectInput";
+
+interface TicketPayload {
+  quantity: number;
+}
 
 interface ChildProps {
   setActiveTab: React.Dispatch<React.SetStateAction<string>>;
@@ -13,47 +17,36 @@ interface ChildProps {
 const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
   const { createTicket, getAllTickets } = useTicketsApi();
 
-  const { users, loading: loadingUsers, error: errorUsers } = useUsersData();
+  const { users, loading: loadingUsers } = useUsersData();
   const [selectedUser, setSelectedUser] = useState("");
 
-  const { profiles, loading: loadingProfiles, error: errorProfiles } = useProfilesData(selectedUser);
+  const { profiles, loading: loadingProfiles } = useProfilesData(selectedUser);
   const [selectedProfile, setSelectedProfile] = useState("");
 
   const [quantity, setQuantity] = useState<number>(1);
-  const [creatingTicket, setCreatingTicket] = useState(false);
-  const [errorTickets, setErrorTickets] = useState<string | null>(null);
 
-  // 🚀 Crear ticket
-  const handleCreateTicket = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      setErrorTickets(null);
-      setCreatingTicket(true);
-
-      try {
-        await createTicket(selectedUser, selectedProfile, { quantity });
-        toast.success("✅ Tickets creados correctamente");
-
-        // reset
-        setSelectedUser("");
-        setSelectedProfile("");
-        setQuantity(1);
-
-        await getAllTickets();
-        setActiveTab("info");
-      } catch (err: any) {
-        setErrorTickets(err.message || "Error al crear tickets");
-      } finally {
-        setCreatingTicket(false);
-      }
+  const { handleSubmit: submitForm, loading: creating, error } = useFormHandler({
+    onSubmit: async (data: TicketPayload) => {
+      if (!selectedUser || !selectedProfile) throw new Error("Selecciona usuario y perfil.");
+      await createTicket(selectedUser, selectedProfile, data);
+      setSelectedUser("");
+      setSelectedProfile("");
+      setQuantity(1);
+      await getAllTickets();
     },
-    [selectedUser, selectedProfile, quantity, createTicket, getAllTickets, setActiveTab]
-  );
+    onSuccess: () => setActiveTab("info"),
+    successMessage: "✅ Tickets creados correctamente",
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitForm({ quantity });
+  };
 
   return (
     <div className="max-w-lg mx-auto">
       <form
-        onSubmit={handleCreateTicket}
+        onSubmit={handleSubmit}
         className="bg-white shadow-md rounded-lg overflow-hidden"
       >
         <div className="p-6 space-y-4">
@@ -70,8 +63,6 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
               setSelectedProfile("");
             }}
             options={users.map((u) => ({ label: u.userName, value: u.userName }))}
-
-
           />
 
           {/* Perfil */}
@@ -81,8 +72,6 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
               value={selectedProfile}
               onChange={setSelectedProfile}
               options={profiles.map((p) => ({ label: p.name, value: p.name }))}
-
-
             />
           )}
 
@@ -105,17 +94,17 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
               !selectedUser ||
               !selectedProfile ||
               quantity < 1 ||
-              creatingTicket ||
+              creating ||
               loadingUsers ||
               loadingProfiles
             }
           >
-            {creatingTicket ? "Creando..." : "Crear Tickets"}
+            {creating ? "Creando..." : "Crear Tickets"}
           </button>
 
-          {errorTickets && (
+          {error && (
             <p className="mt-3 text-center text-sm font-medium p-2 rounded-md bg-red-100 text-red-700">
-              {errorTickets}
+              {error}
             </p>
           )}
         </div>

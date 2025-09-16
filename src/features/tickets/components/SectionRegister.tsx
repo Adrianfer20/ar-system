@@ -54,9 +54,15 @@ const SectionRegister = () => {
       {loading && (
         <p className="text-center text-gray-500">Cargando Clientes...</p>
       )}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && (
+        <p className="text-center text-red-500 p-2 rounded-md bg-red-100">
+          {error}
+        </p>
+      )}
       {!loading && !error && (!tickets || tickets.length === 0) && (
-        <p className="text-gray-600">No hay clientes cargados aún...</p>
+        <p className="text-center text-gray-600">
+          No hay clientes cargados aún...
+        </p>
       )}
 
       {!loading && !error && tickets && (
