@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useTickets } from "@/context/TicketsContext";
 import { Page, PageHeader } from "@/components/ui/Page";
 import Card, { CardHeader as UICardHeader, CardBody as UICardBody } from "@/components/ui/Card";
-import { H3, P } from "@/components/ui/Typography";
+import { P } from "@/components/ui/Typography";
 import { PageSection } from "@/components/ui/Section";
 
 // --- TIPOS Y HELPERS ---
@@ -18,11 +18,65 @@ function toDate(timestamp?: { _seconds: number; _nanoseconds: number } | null): 
   return new Date(timestamp._seconds * 1000 + Math.floor(timestamp._nanoseconds / 1e6));
 }
 
+// Formatea YYYY-MM-DD en hora local (evita UTC / toISOString)
+function formatLocalDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+// Obtiene el número de semana ISO-8601 usando hora local (lunes como primer día)
 function getWeekNumber(date: Date) {
-  const tmpDate = new Date(date.getTime());
-  tmpDate.setUTCDate(tmpDate.getUTCDate() + 4 - (tmpDate.getUTCDay() || 7));
-  const yearStart = new Date(Date.UTC(tmpDate.getUTCFullYear(), 0, 1));
-  return Math.ceil(((tmpDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  const tmpDate = new Date(date);
+  // normalizar a medianoche local
+  tmpDate.setHours(0, 0, 0, 0);
+  // día de la semana (1=lunes, 7=domingo)
+  const day = (tmpDate.getDay() || 7);
+  // mover al jueves de la semana actual
+  tmpDate.setDate(tmpDate.getDate() + 4 - day);
+  // inicio de año ISO (1 de enero local)
+  const yearStart = new Date(tmpDate.getFullYear(), 0, 1);
+  const weekNo = Math.ceil(((+tmpDate - +yearStart) / 86400000 + 1) / 7);
+  return weekNo;
+}
+
+// Año ISO para semanas (puede diferir del getFullYear en bordes de año)
+function getISOWeekYear(date: Date) {
+  const tmpDate = new Date(date);
+  tmpDate.setHours(0, 0, 0, 0);
+  const day = (tmpDate.getDay() || 7);
+  tmpDate.setDate(tmpDate.getDate() + 4 - day);
+  return tmpDate.getFullYear();
+}
+
+// Fecha legible en español (por ejemplo: "Martes, 16 de septiembre de 2025" o compacto "16 SEP, Mar")
+function formatPrettyDateEs(date: Date, options?: { compact?: boolean }) {
+  const { compact } = options || {};
+  if (compact) {
+    const day = new Intl.DateTimeFormat("es-ES", { day: "2-digit" }).format(date);
+    const mon = new Intl.DateTimeFormat("es-ES", { month: "short" }).format(date).toUpperCase();
+    const wk = new Intl.DateTimeFormat("es-ES", { weekday: "short" }).format(date);
+    return `${day} ${mon}, ${wk}`;
+  }
+  return new Intl.DateTimeFormat("es-ES", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+  }).format(date);
+}
+
+// Convierte "YYYY-MM-DD" a Date local (evitando parse UTC de Date(string))
+function dateFromKeyLocal(key: string) {
+  const [y, m, d] = key.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+}
+
+function prevDateKey(key: string) {
+  const dt = dateFromKeyLocal(key);
+  dt.setDate(dt.getDate() - 1);
+  return formatLocalDate(dt);
 }
 
 // --- COMPONENTES VISUALES ---
@@ -57,7 +111,8 @@ const SalesPage: React.FC = () => {
     return allSales.filter(s => {
       const userMatch = selectedUser === "all" || s.user === selectedUser;
       if (mode === "day") {
-        const dateMatch = !selectedDate || s.usedAt.toISOString().slice(0, 10) === selectedDate;
+  const dateKey = formatLocalDate(s.usedAt);
+  const dateMatch = !selectedDate || dateKey === selectedDate;
         return userMatch && dateMatch;
       }
       return userMatch;
@@ -74,7 +129,9 @@ const SalesPage: React.FC = () => {
   const groupedSales = useMemo(() => {
     const grouped: Record<string, Record<string, Record<string, Sale[]>>> = {};
     filteredSales.forEach(s => {
-      const period = mode === "day" ? s.usedAt.toISOString().slice(0, 10) : `${s.usedAt.getFullYear()}-W${getWeekNumber(s.usedAt)}`;
+      const period = mode === "day"
+        ? formatLocalDate(s.usedAt)
+        : `${getISOWeekYear(s.usedAt)}-W${getWeekNumber(s.usedAt)}`;
       if (!grouped[period]) grouped[period] = {};
       if (!grouped[period][s.user]) grouped[period][s.user] = {};
       if (!grouped[period][s.user][s.profile]) grouped[period][s.user][s.profile] = [];
@@ -83,6 +140,19 @@ const SalesPage: React.FC = () => {
     return grouped;
   }, [filteredSales, mode]);
 
+  // 4.1. Mapa de conteos por usuario y día para tendencia
+  const countsByUserDay = useMemo(() => {
+    // Construir mapa usando TODAS las ventas (no filtradas) para poder comparar vs ayer
+    const m = new Map<string, Map<string, number>>(); // user -> (dayKey -> count)
+    allSales.forEach(s => {
+      const dayKey = formatLocalDate(s.usedAt);
+      if (!m.has(s.user)) m.set(s.user, new Map());
+      const userMap = m.get(s.user)!;
+      userMap.set(dayKey, (userMap.get(dayKey) ?? 0) + 1);
+    });
+    return m;
+  }, [allSales]);
+
   // 5. Función para alternar "ver más"
   const toggleExpand = (key: string) => {
     setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
@@ -90,13 +160,10 @@ const SalesPage: React.FC = () => {
 
   return (
     <Page>
-      <PageHeader
-        title="Reporte de Ventas"
-        subtitle="Análisis de tickets utilizados por el personal."
-      />
+  <PageHeader title="Resumen Diario" subtitle="Análisis de tickets utilizados por el personal." />
 
-  {/* Filtros */}
-  <PageSection bodyClassName="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Filtros */}
+      <PageSection bodyClassName="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
           <select
@@ -108,96 +175,201 @@ const SalesPage: React.FC = () => {
             {users.map(u => <option key={u} value={u}>{u}</option>)}
           </select>
         </div>
-
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Modo</label>
-          <select
-            value={mode}
-            onChange={(e) => {
-              setMode(e.target.value as "day" | "week");
-              setSelectedDate(""); // limpiar fecha si cambia a semanal
-            }}
-            className="w-full border-gray-300 rounded-md p-2 shadow-sm"
-          >
-            <option value="day">Por Día</option>
-            <option value="week">Por Semana</option>
-          </select>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Vista</label>
+          <div className="inline-flex rounded-md border border-gray-300 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setMode("day")}
+              className={`px-3 py-2 text-sm font-medium ${mode === "day" ? "bg-gray-900 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+              aria-pressed={mode === "day"}
+            >
+              Día
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("week")}
+              className={`px-3 py-2 text-sm font-medium border-l border-gray-300 ${mode === "week" ? "bg-gray-900 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+              aria-pressed={mode === "week"}
+            >
+              Semana
+            </button>
+          </div>
         </div>
-
         {mode === "day" && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha específica</label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full border-gray-300 rounded-md p-2 shadow-sm"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha (opcional)</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full border-gray-300 rounded-md p-2 shadow-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setSelectedDate(formatLocalDate(new Date()))}
+                className="px-2 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Hoy
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedDate("")}
+                className="px-2 py-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Limpiar
+              </button>
+            </div>
           </div>
         )}
-  </PageSection>
+      </PageSection>
 
       {/* Ventas */}
-      {Object.entries(groupedSales).length === 0 ? (
-  <P variant="muted">No hay ventas para los filtros seleccionados.</P>
-      ) : (
-  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
-          {Object.entries(groupedSales)
-            .sort(([a], [b]) => {
-              if (mode === "day") {
-                return new Date(a).getTime() - new Date(b).getTime();
-              } else {
-                const [yearA, weekA] = a.split('-W').map(Number);
-                const [yearB, weekB] = b.split('-W').map(Number);
-                return yearA !== yearB ? yearA - yearB : weekA - weekB;
-              }
-            })
-            .map(([period, userGroups]) => (
-            <Card key={period}>
-              <UICardHeader>
-                <H3>{mode === "day" ? `Día: ${period}` : `Semana: ${period}`}</H3>
-              </UICardHeader>
-              <UICardBody>
-                {Object.entries(userGroups)
+      <div className="px-4 md:px-6">
+        {Object.entries(groupedSales).length === 0 ? (
+          <P variant="muted">No hay ventas para los filtros seleccionados.</P>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 items-start">
+            {Object.entries(groupedSales)
+              .sort(([a], [b]) => {
+                if (mode === "day") {
+                  return a.localeCompare(b);
+                } else {
+                  const [yearA, weekA] = a.split('-W').map(Number);
+                  const [yearB, weekB] = b.split('-W').map(Number);
+                  return yearA !== yearB ? yearA - yearB : weekA - weekB;
+                }
+              })
+              .map(([period, userGroups]) => (
+                Object.entries(userGroups)
                   .filter(([user]) => selectedUser === "all" || user === selectedUser)
-                  .map(([user, salesByProfile]) => (
-                    <div key={user} className="mb-4">
-                      <H3 className="capitalize">{user}</H3>
-                      {Object.entries(salesByProfile).map(([profile, sales]) => {
-                        const key = `${period}-${user}-${profile}`;
-                        const isExpanded = expanded[key] || false;
+                  .map(([user, salesByProfile]) => {
+                    const total = Object.values(salesByProfile).reduce((acc, arr) => acc + arr.length, 0);
+                    const entries = Object.entries(salesByProfile).map(([profile, arr]) => ({ profile, count: arr.length }));
+                    entries.sort((a, b) => b.count - a.count);
+                    const top = entries[0];
 
-                        return (
-                          <div key={profile} className="mt-2 bg-gray-50 p-3 rounded border border-gray-200">
-                            <P size="sm" variant="muted">{sales.length} tickets vendidos ({profile})</P>
-                            <div className="flex items-center justify-between mt-1">
+                    // Indicador de tendencia (modo día)
+                    let trendColor = "border-gray-200";
+                    let trendBadgeBg = "bg-gray-100";
+                    let trendText = "";
+                    let trendArrow = "";
+                    if (mode === "day") {
+                      const userMap = countsByUserDay.get(user);
+                      const yesterdayKey = prevDateKey(period);
+                      const yesterday = userMap?.get(yesterdayKey) ?? 0;
+                      const today = total;
+                      if (yesterday === 0 && today > 0) {
+                        trendColor = "border-green-400";
+                        trendBadgeBg = "bg-green-50";
+                        trendArrow = "▲";
+                        trendText = "nuevo";
+                      } else if (yesterday > 0) {
+                        const diff = today - yesterday;
+                        const pct = Math.round((diff / yesterday) * 100);
+                        if (pct > 0) {
+                          trendColor = "border-green-400";
+                          trendBadgeBg = "bg-green-50";
+                          trendArrow = "▲";
+                          trendText = `+${pct}% vs ayer`;
+                        } else if (pct < 0) {
+                          trendColor = "border-red-400";
+                          trendBadgeBg = "bg-red-50";
+                          trendArrow = "▼";
+                          trendText = `${pct}% vs ayer`;
+                        } else {
+                          trendColor = "border-gray-300";
+                          trendBadgeBg = "bg-gray-50";
+                          trendArrow = "•";
+                          trendText = "sin cambio";
+                        }
+                      } else {
+                        trendColor = "border-gray-200";
+                        trendBadgeBg = "bg-gray-50";
+                        trendArrow = "•";
+                        trendText = "–";
+                      }
+                    }
+
+                    const cardKey = `${period}-${user}`;
+                    const isExpanded = expanded[cardKey] || false;
+                    const prettyDate = mode === "day"
+                      ? formatPrettyDateEs(dateFromKeyLocal(period), { compact: true })
+                      : `Semana ${period}`;
+
+                    return (
+                      <Card key={cardKey} className={`relative border-l-4 ${trendColor}`} hover>
+                        <UICardHeader className="bg-gradient-to-b from-slate-50 to-white">
+                          <div className="flex justify-between items-start">
+                            <div className="flex items-baseline gap-3">
+                              <span className="text-4xl font-black tracking-tight">{total}</span>
+                              <div className="flex items-center gap-2 text-gray-500">
+                                <span aria-hidden>🎟️</span>
+                                <span className="text-sm font-medium">Tickets Vendidos</span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xs text-gray-500 flex items-center gap-1 justify-end">
+                                <span aria-hidden>📅</span>
+                                <span>{prettyDate}</span>
+                              </div>
+                              {mode === "day" && (
+                                <div className={`inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-xs ${trendBadgeBg}`}>
+                                  <span className={trendColor.includes("red") ? "text-red-600" : trendColor.includes("green") ? "text-green-600" : "text-gray-500"} aria-hidden>
+                                    {trendArrow}
+                                  </span>
+                                  <span className="text-gray-700">{trendText}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </UICardHeader>
+                        <UICardBody className="bg-white">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">
+                            <div>
+                              <P className="text-gray-700 capitalize"><span className="text-gray-500">Vendedor:</span> {user}</P>
+                              {entries.length > 1 ? (
+                                <P variant="muted" size="sm">Top perfil: <span className="font-medium text-gray-700">{top.profile}</span> ({top.count}) • Total perfiles: {entries.length}</P>
+                              ) : (
+                                <P variant="muted" size="sm">Perfil: <span className="font-medium text-gray-700">{entries[0]?.profile}</span></P>
+                              )}
+                            </div>
+                            <div className="flex sm:justify-end items-end">
                               <button
-                                onClick={() => toggleExpand(key)}
-                                className="text-primary-500 hover:underline cursor-pointer"
+                                onClick={() => toggleExpand(cardKey)}
+                                className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium"
                               >
-                                {isExpanded ? "ver menos" : "ver más"}
+                                Ver Detalles →
                               </button>
                             </div>
-                            {isExpanded && (
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                {sales.map((s, idx) => (
-                                  <span key={idx} className="bg-gray-100 px-2 py-1 rounded text-gray-600 text-sm">
-                                    {s.code}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-              </UICardBody>
-            </Card>
-          ))}
-        </div>
-      )}
-  </Page>
+
+                          {isExpanded && (
+                            <div className="mt-4 space-y-3">
+                              {Object.entries(salesByProfile).map(([profile, sales]) => (
+                                <div key={profile}>
+                                  <P className="text-gray-700 font-medium">{profile} <span className="text-gray-500 font-normal">({sales.length})</span></P>
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    {sales.map((s, idx) => (
+                                      <span key={idx} className="bg-gray-100 px-2 py-1 rounded text-gray-600 text-sm">
+                                        {s.code}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </UICardBody>
+                      </Card>
+                    );
+                  })
+              ))}
+          </div>
+        )}
+      </div>
+    </Page>
   );
 };
 

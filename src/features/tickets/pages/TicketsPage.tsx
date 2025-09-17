@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useTickets } from "@/context/TicketsContext";
 import TicketFilters from "../components/TicketFilters";
-import TicketCard from "../components/TicketCard";
+import TicketRow from "../components/TicketRow";
 import { Page, PageHeader } from "@/components/ui/Page";
 import { H2, P } from "@/components/ui/Typography";
 
@@ -40,10 +40,16 @@ const TicketsPage: React.FC = () => {
   }, [tickets, selectedUser, selectedProfile, codeFilter]);
 
 
+  // Título dinámico
+  const pageTitle = useMemo(() => {
+    if (selectedUser !== "all") return `Tickets de ${selectedUser}`;
+    return "Lista de Tickets";
+  }, [selectedUser]);
+
   return (
     <Page>
       <PageHeader
-        title="Información de los Tickets"
+        title={pageTitle}
         subtitle="Bienvenido a la página de registro de tickets."
       />
       {/* Filtros siempre visibles */}
@@ -73,9 +79,9 @@ const TicketsPage: React.FC = () => {
           {filteredTickets.length === 0 ? (
             <P>No hay tickets que coincidan con el filtro.</P>
           ) : (
-            <ul className="space-y-5">
+            <ul className="space-y-3">
               {filteredTickets.map((item, i) => (
-                <TicketCard key={i} item={item} />
+                <TicketRow key={i} item={item} />
               ))}
             </ul>
           )}

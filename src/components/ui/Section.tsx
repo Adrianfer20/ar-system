@@ -5,14 +5,16 @@ import clsx from "clsx";
 type PageSectionProps = React.HTMLAttributes<HTMLDivElement> & {
   noCard?: boolean;
   bodyClassName?: string;
+  hover?: boolean;
 };
 
-export const PageSection: React.FC<PageSectionProps> = ({ children, className, bodyClassName, noCard }) => {
+export const PageSection: React.FC<PageSectionProps> = ({ children, className, bodyClassName, noCard, hover }) => {
   if (noCard) {
     return <div className={clsx("mb-6", className)}>{children}</div>;
   }
   return (
-    <Card className={clsx("mb-6", className)}>
+    <Card className={clsx("mb-6", className)} hover={hover}
+    >
       <CardBody className={bodyClassName}>{children}</CardBody>
     </Card>
   );
