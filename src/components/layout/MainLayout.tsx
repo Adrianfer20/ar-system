@@ -1,16 +1,16 @@
 import { Outlet } from "react-router-dom";
-import { FiHome, FiUsers, FiFileText, FiSettings } from "react-icons/fi";
+import { FiUsers, FiFileText, FiSettings, FiArchive, FiTag } from "react-icons/fi";
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "./Sidebar";
 import { Toaster } from "react-hot-toast";
 
 const MainLayout = () => {
   const sections = [
-    { path: "/", label: "Ventas", icon: <FiFileText size={20} /> },
-    { path: "/tickets", label: "Tickets", icon: <FiHome size={20} /> },
-  { path: "/clientes", label: "Clientes", icon: <FiUsers size={20} /> },
-    { path: "/register", label: "Registro", icon: <FiUsers size={20} /> },
-    { path: "/settings", label: "Ajustes", icon: <FiSettings size={20} /> },
+  { path: "/", label: "Ventas", icon: <FiFileText /> },
+  { path: "/tickets", label: "Tickets", icon: <FiTag /> },
+  { path: "/clientes", label: "Clientes", icon: <FiUsers /> },
+  { path: "/register", label: "Registro", icon: <FiArchive /> },
+  { path: "/settings", label: "Ajustes", icon: <FiSettings /> },
   ];
   
 

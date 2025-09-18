@@ -26,7 +26,10 @@ const Sidebar: React.FC<SidebarProps> = ({ sections }) => {
               }`
             }
           >
-            {section.icon}
+            <span className="grid place-items-center text-[20px] lg:text-[22px]">
+              {/* Icono inyectado: asegurar tamaño y heredar color del contenedor */}
+              <span className="inline-flex text-current">{section.icon}</span>
+            </span>
             <span className="hidden lg:block">{section.label}</span>
           </NavLink>
         ))}
