@@ -234,11 +234,13 @@ const SalesPage: React.FC = () => {
             {Object.entries(groupedSales)
               .sort(([a], [b]) => {
                 if (mode === "day") {
-                  return a.localeCompare(b);
+                  // Ordenar por fecha descendente (más reciente primero)
+                  return b.localeCompare(a);
                 } else {
                   const [yearA, weekA] = a.split('-W').map(Number);
                   const [yearB, weekB] = b.split('-W').map(Number);
-                  return yearA !== yearB ? yearA - yearB : weekA - weekB;
+                  // Ordenar por semana ISO descendente (año y semana más recientes primero)
+                  return yearA !== yearB ? yearB - yearA : weekB - weekA;
                 }
               })
               .map(([period, userGroups]) => (
