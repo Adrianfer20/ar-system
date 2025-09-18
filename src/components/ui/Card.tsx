@@ -9,7 +9,7 @@ const Card: React.FC<CardProps> = ({ className, children, hover = false, ...rest
   return (
     <div
       className={clsx(
-        "bg-white border border-slate-200 rounded shadow-sm",
+        "bg-white border border-slate-200 rounded shadow-sm overflow-hidden",
         hover && "transition-all hover:shadow-md",
         className
       )}

@@ -241,7 +241,7 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
                   const ticketsCount = profileTickets.length;
                   return (
                     <CardBody key={profile} className="p-0">
-                      <div className="m-4 rounded-md border border-slate-300 bg-white p-3 sm:p-4 hover:shadow border-l-4 border-primary-400">
+                      <div className="m-4 rounded-md border border-slate-300 bg-white p-3 sm:p-4 hover:shadow border-l-4 border-l-primary-400">
                         <div
                           className="flex items-center gap-3 cursor-pointer"
                           onClick={() => handleToggleProfile(group.user, profile)}

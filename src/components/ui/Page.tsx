@@ -10,7 +10,7 @@ type PageProps = {
  * Contenedor de página: aplica paddings y ancho máximo consistentes.
  */
 export const Page: React.FC<PageProps> = ({ children, className }) => (
-  <div className={`px-4 sm:px-6 lg:px-8 py-6 ${className ?? ""}`}>{children}</div>
+  <div className={`px-4 sm:px-6 lg:px-8 py-6 min-w-0 ${className ?? ""}`}>{children}</div>
 );
 
 type PageHeaderProps = {

@@ -20,9 +20,9 @@ const MainLayout = () => {
       <Navbar />
 
       {/* Sidebar + contenido */}
-      <div className="h-full flex flex-1">
+      <div className="h-full flex flex-1 min-w-0">
         <Sidebar sections={sections} />
-        <main className="flex-1 p-4 overflow-auto pb-28">
+        <main className="flex-1 min-w-0 p-4 overflow-auto pb-28">
           <Outlet />
         </main>
       </div>
