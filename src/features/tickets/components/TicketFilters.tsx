@@ -1,6 +1,6 @@
 // src/features/tickets/components/TicketFilters.tsx
 import React from "react";
-import { BsFolder2Open, BsPerson, BsSearch } from "react-icons/bs";
+import { FiUser, FiFileText, FiSearch } from "react-icons/fi";
 import Select from "@/components/ui/Select";
 import { PageSection } from "@/components/ui/Section";
 
@@ -33,12 +33,13 @@ const TicketFilters: React.FC<Props> = ({
 
   return (
     <PageSection hover bodyClassName="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gradient-to-b from-white to-slate-50">
-      {/* Usuario */}
+      <div className="grid grid-cols-2 gap-4 md:col-span-2">
+        {/* Usuario */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
-        <div className="relative">
+        <div className="relative rounded pr-1 border border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-50 pb-1">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <BsPerson className="h-5 w-5 text-slate-400" aria-hidden="true" />
+            <FiUser className="h-5 w-5 text-slate-400" aria-hidden="true" />
           </div>
           <Select
             aria-label="Filtro de usuario"
@@ -53,9 +54,9 @@ const TicketFilters: React.FC<Props> = ({
       {/* Perfil */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Perfil</label>
-        <div className="relative">
+        <div className="relative rounded pr-1 border border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-50 pb-1">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <BsFolder2Open className="h-5 w-5 text-slate-400" aria-hidden="true" />
+            <FiFileText className="h-5 w-5 text-slate-400" aria-hidden="true" />
           </div>
           <Select
             aria-label="Filtro de perfil"
@@ -66,6 +67,8 @@ const TicketFilters: React.FC<Props> = ({
           />
         </div>
       </div>
+  
+      </div>
 
       {/* Código */}
       <div>
@@ -73,7 +76,7 @@ const TicketFilters: React.FC<Props> = ({
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <BsSearch className="h-5 w-5 text-slate-400" aria-hidden="true" />
+              <FiSearch className="h-5 w-5 text-slate-400" aria-hidden="true" />
             </div>
             <input
               type="text"

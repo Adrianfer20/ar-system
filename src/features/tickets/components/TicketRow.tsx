@@ -106,7 +106,7 @@ const TicketRow: React.FC<Props> = ({ item }) => {
                 onClick={() => { setMenuOpen(false); /* renombrado de CMD */ cmdAddUser(item); }}
               >
                 <FaFileCode className="text-slate-500" />
-                <span>Ver datos brutos</span>
+                <span>Copiar CMD</span>
               </button>
               <button
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
