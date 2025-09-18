@@ -3,33 +3,27 @@ import Tabs from '../components/Tabs';
 import CreateClient from './create/CreateClient';
 import CreateProfile from './create/CreateProfile';
 import CreateTickets from './create/CreateTickets';
-import SectionRegister from '../components/SectionRegister';
 import { Page, PageHeader } from '@/components/ui/Page';
 
 const RegisterPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("info");
+  const [activeTab, setActiveTab] = useState("tickets");
 
   const tabs = [
-    { id: "info", label: "Información del Registro" },
-    { id: "client", label: "Registrar Cliente" },
-    { id: "profile", label: "Registrar Perfil de Cliente" },
     { id: "tickets", label: "Registrar Tickets" },
+    { id: "profile", label: "Registrar Perfil de Cliente" },
+    { id: "client", label: "Registrar Cliente" },
   ];
 
   return (
     <Page>
-      <PageHeader
-        title="Información de Registro"
-        subtitle="Bienvenido a la página de registro de los clientes."
-      />
+  <PageHeader title="Registro" subtitle="Gestiona el registro de clientes y tickets." />
       <div className="">
   <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} variant="justified" />
 
         <div className="mt-6">
-          {activeTab === "info" && <SectionRegister />}
-          {activeTab === "client" && <CreateClient setActiveTab={setActiveTab} />}
-          {activeTab === "profile" && <CreateProfile setActiveTab={setActiveTab} />}
           {activeTab === "tickets" && <CreateTickets setActiveTab={setActiveTab} />}
+          {activeTab === "profile" && <CreateProfile setActiveTab={setActiveTab} />}
+          {activeTab === "client" && <CreateClient setActiveTab={setActiveTab} />}
         </div>
       </div>
     </Page>

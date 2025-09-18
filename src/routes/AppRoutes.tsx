@@ -5,6 +5,7 @@ import RegisterPage from "@/features/tickets/pages/RegisterPage";
 import LoginPage from "@/features/auth/pages/LoginPage";
 import PrivateRoute from "./PrivateRoute";
 import SalesPage from "@/features/tickets/pages/SalesPage";
+import ClientesPage from "@/features/tickets/pages/ClientesPage";
 
 const AppRoutes = () => {
   return (
@@ -13,8 +14,9 @@ const AppRoutes = () => {
       {/* Rutas privadas con layout principal */}
       <Route element={<PrivateRoute />}>
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<TicketsPage />} />
-          <Route path="reports" element={<SalesPage />} />
+          <Route index path="" element={<SalesPage />} />
+          <Route path="tickets" element={<TicketsPage />} />
+          <Route path="clientes" element={<ClientesPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="settings" element={<p>Sección de Ajustes - En construcción</p>} />
         </Route>

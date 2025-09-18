@@ -6,8 +6,9 @@ import { Toaster } from "react-hot-toast";
 
 const MainLayout = () => {
   const sections = [
-    { path: "/", label: "Tickets", icon: <FiHome size={20} /> },
-    { path: "/reports", label: "Ventas", icon: <FiFileText size={20} /> },
+    { path: "/", label: "Ventas", icon: <FiFileText size={20} /> },
+    { path: "/tickets", label: "Tickets", icon: <FiHome size={20} /> },
+  { path: "/clientes", label: "Clientes", icon: <FiUsers size={20} /> },
     { path: "/register", label: "Registro", icon: <FiUsers size={20} /> },
     { path: "/settings", label: "Ajustes", icon: <FiSettings size={20} /> },
   ];
