@@ -3,6 +3,7 @@ import Tabs from '../components/Tabs';
 import CreateClient from './create/CreateClient';
 import CreateProfile from './create/CreateProfile';
 import CreateTickets from './create/CreateTickets';
+import ImportTickets from './create/ImportTickets';
 import { Page, PageHeader } from '@/components/ui/Page';
 
 const RegisterPage: React.FC = () => {
@@ -12,6 +13,7 @@ const RegisterPage: React.FC = () => {
     { id: "tickets", label: "Registrar Tickets" },
     { id: "profile", label: "Registrar Perfil de Cliente" },
     { id: "client", label: "Registrar Cliente" },
+  { id: "import", label: "Importar Tickets" },
   ];
 
   return (
@@ -24,6 +26,7 @@ const RegisterPage: React.FC = () => {
           {activeTab === "tickets" && <CreateTickets setActiveTab={setActiveTab} />}
           {activeTab === "profile" && <CreateProfile setActiveTab={setActiveTab} />}
           {activeTab === "client" && <CreateClient setActiveTab={setActiveTab} />}
+          {activeTab === "import" && <ImportTickets setActiveTab={setActiveTab} />}
         </div>
       </div>
     </Page>

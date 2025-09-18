@@ -1,6 +1,8 @@
 // hooks/useTicketsApi.ts
 import { apiRequest } from "@/lib/api.service";
 import { useState } from "react";
+import { db, USERS_COLLECTION } from "@/lib/firebase.config";
+import { addDoc, collection, doc, serverTimestamp } from "firebase/firestore";
 import { useUsersApi } from "./useUserApi";
 import type { Profile } from "./useProfilesApi";
 import type { User } from "@/types/User.type";
@@ -104,6 +106,38 @@ export function useTicketsApi() {
     }
   };
 
+  // -----------------------------
+  // Importar códigos a un perfil existente (Firestore directo)
+  // -----------------------------
+  const importCodes = async (
+    userName: string,
+    profileName: string,
+    codes: { code: string; status: boolean; usedAt: { _seconds: number; _nanoseconds: number } }[]
+  ) => {
+    if (!userName || !profileName) throw new Error("importCodes requiere userName y profileName");
+    if (!codes?.length) throw new Error("No hay códigos para importar");
+    setError(null);
+
+    // Construir referencePath directo y escribir en subcolección 'tickets'
+    const profileRef = doc(db, `${USERS_COLLECTION}/${userName}/Profile-Tickets/${profileName}`);
+
+    // Normalizar códigos para Firestore (guardar como no usados)
+    const codesPayload = codes.map((c) => ({
+      code: c.code,
+      status: false,
+      usedAt: null,
+    }));
+
+    const ticketsCol = collection(profileRef, "Tickets");
+    await addDoc(ticketsCol, {
+      createdAt: serverTimestamp(),
+      codes: codesPayload,
+    });
+
+    // refrescar listado local (si la API no refleja aún, esto puede no mostrarlo)
+    await getAllTickets();
+  };
+
   const getTicket = async (userName: string, profileName: string, ticketId: string): Promise<Ticket | null> => {
     if (!userName || !profileName || !ticketId) throw new Error("getTicket requiere todos los parámetros");
     setError(null);
@@ -188,8 +222,8 @@ export function useTicketsApi() {
           apiRequest(`/users/${user}/profiles/${profile}/tickets/${ticketId}`, { method: "DELETE" })
         )
       );
-  // Luego eliminar el perfil en sí en el backend
-  await apiRequest(`/users/${user}/profiles/${profile}`, { method: "DELETE" });
+      // Luego eliminar el perfil en sí en el backend
+      await apiRequest(`/users/${user}/profiles/${profile}`, { method: "DELETE" });
       // Actualizar estado local: remover los tickets eliminados
       setTickets((prev) =>
         prev.filter(
@@ -234,5 +268,6 @@ export function useTicketsApi() {
     deleteTicket,
     deleteProfile,
     deleteClient,
+    importCodes,
   };
 }
