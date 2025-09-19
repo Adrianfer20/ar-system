@@ -316,72 +316,70 @@ const SalesPage: React.FC = () => {
                     const isExpanded = expanded[cardKey] || false;
                     const prettyDate = mode === "day"
                       ? formatPrettyDateEs(dateFromKeyLocal(period), { compact: true })
-                      : `Semana ${period}`;
+                      : `Semana ${period.replace('-W', ' ')}`;
 
                     return (
-                      <Card key={cardKey} className={`relative min-w-0 border-l-4 ${trendColor}`} hover>
-                        <UICardHeader className="bg-gradient-to-b from-slate-50 to-white">
-                          <div className="flex flex-wrap gap-3 sm:flex-nowrap sm:justify-between sm:items-start">
-                            <div className="flex items-baseline gap-2 sm:gap-3">
-                              <span className="text-4xl font-black tracking-tight leading-none">{total}</span>
-                              <div className="flex items-center gap-2 text-gray-500">
-                                <span aria-hidden>🎟️</span>
-                                <span className="text-sm font-medium leading-snug">Tickets Vendidos</span>
-                              </div>
-                            </div>
-                            <div className="text-left sm:text-right">
-                              <div className="text-xs text-gray-500 flex items-center gap-1 sm:justify-end flex-wrap">
-                                <span aria-hidden>📅</span>
-                                <span className="break-words">{prettyDate}</span>
-                              </div>
-                              {mode === "day" && (
-                                <div className={`inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full text-xs ${trendBadgeBg}`}>
-                                  <span className={trendColor.includes("red") ? "text-red-600" : trendColor.includes("green") ? "text-green-600" : "text-gray-500"} aria-hidden>
-                                    {trendArrow}
-                                  </span>
-                                  <span className="text-gray-700">{trendText}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </UICardHeader>
-                        <UICardBody className="bg-white">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-start">
-                            <div>
-                              <P className="text-gray-700 capitalize"><span className="text-gray-500">Vendedor:</span> {user}</P>
-                              {entries.length > 1 ? (
-                                <P variant="muted" size="sm">Top perfil: <span className="font-medium text-gray-700">{top.profile}</span> ({top.count}) • Total perfiles: {entries.length}</P>
-                              ) : (
-                                <P variant="muted" size="sm">Perfil: <span className="font-medium text-gray-700">{entries[0]?.profile}</span></P>
-                              )}
-                            </div>
-                            <div className="flex justify-start sm:justify-end items-end">
-                              <button
-                                onClick={() => toggleExpand(cardKey)}
-                                className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 font-medium"
-                              >
-                                Ver Detalles →
-                              </button>
-                            </div>
+                      <Card key={cardKey} className={`flex flex-col min-w-0 border-l-4 ${trendColor}`} hover>
+                        {/* Encabezado con Vendedor y Fecha */}
+                        <div className="flex justify-between items-center p-3 bg-slate-50 border-b border-slate-200">
+                          <p className="font-bold text-slate-800 capitalize">{user}</p>
+                          <p className="text-xs text-slate-500">{prettyDate}</p>
+                        </div>
+
+                        {/* Cuerpo principal */}
+                        <div className="flex flex-grow p-3">
+                          {/* Total de Ventas */}
+                          <div className="flex flex-col items-center justify-center pr-3 border-r border-slate-200">
+                            <span className="text-4xl font-black text-slate-800 tracking-tighter">{total}</span>
+                            <span className="text-xs text-slate-500 -mt-1">ventas</span>
                           </div>
 
-                          {isExpanded && (
-                            <div className="mt-4 space-y-3">
-                              {Object.entries(salesByProfile).map(([profile, sales]) => (
-                                <div key={profile}>
-                                  <P className="text-gray-700 font-medium">{profile} <span className="text-gray-500 font-normal">({sales.length})</span></P>
-                                  <div className="flex flex-wrap gap-2 mt-2">
-                                    {sales.map((s, idx) => (
-                                      <span key={idx} className="bg-gray-100 px-2 py-1 rounded text-gray-600 text-[13px] break-words">
-                                        {s.code}
-                                      </span>
-                                    ))}
-                                  </div>
+                          {/* Desglose y Tendencia */}
+                          <div className="pl-3 flex-grow flex flex-col justify-center">
+                            {entries.map(({ profile, count }) => (
+                              <div key={profile} className="flex justify-between items-center text-sm">
+                                <span className="text-slate-600 capitalize truncate">{profile}</span>
+                                <span className="font-semibold text-slate-800">{count}</span>
+                              </div>
+                            ))}
+                            {mode === "day" && trendText !== "–" && (
+                              <div className={`inline-flex items-center gap-1.5 mt-2 px-2 py-0.5 rounded-full text-xs self-start ${trendBadgeBg}`}>
+                                <span className={trendColor.includes("red") ? "text-red-600" : trendColor.includes("green") ? "text-green-600" : "text-gray-500"} aria-hidden>
+                                  {trendArrow}
+                                </span>
+                                <span className="text-gray-700 font-medium">{trendText}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Footer con botón para expandir */}
+                        <div className="border-t border-slate-200 bg-slate-50 px-3 py-2 text-center">
+                          <button
+                            onClick={() => toggleExpand(cardKey)}
+                            className="text-xs font-semibold text-primary-600 hover:text-primary-800"
+                          >
+                            {isExpanded ? 'Ocultar Códigos' : 'Ver Códigos'}
+                          </button>
+                        </div>
+
+                        {/* Contenido expandido con los códigos */}
+                        {isExpanded && (
+                          <div className="p-3 border-t border-slate-200 bg-white space-y-3">
+                            {Object.entries(salesByProfile).map(([profile, sales]) => (
+                              <div key={profile}>
+                                <p className="text-sm text-gray-700 font-medium capitalize">{profile} <span className="text-gray-500 font-normal">({sales.length})</span></p>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {sales.map((s, idx) => (
+                                    <span key={idx} className="bg-gray-100 px-2 py-1 rounded text-gray-600 text-xs font-mono break-all">
+                                      {s.code}
+                                    </span>
+                                  ))}
                                 </div>
-                              ))}
-                            </div>
-                          )}
-                        </UICardBody>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </Card>
                     );
                   })

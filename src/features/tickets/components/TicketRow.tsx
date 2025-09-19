@@ -3,16 +3,11 @@ import type { FullTicket } from "@/hooks/useTicketsApi";
 import { useTickets } from "@/context/TicketsContext";
 import { usePdf } from "../hooks/usePdf";
 import useCMD from "../hooks/useCMD";
-import Button, { IconButton } from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import { FaPrint, FaTrashAlt, FaEllipsisV, FaRegCopy, FaCode, FaRegCalendarAlt, FaFileCode, FaUser } from "react-icons/fa";
 
 interface Props {
   item: FullTicket;
-}
-
-function truncateMiddle(str: string, front = 5, back = 5) {
-  if (str.length <= front + back) return str;
-  return `${str.slice(0, front)}...${str.slice(-back)}`;
 }
 
 const TicketRow: React.FC<Props> = ({ item }) => {
@@ -26,84 +21,63 @@ const TicketRow: React.FC<Props> = ({ item }) => {
   const totalCodes = item.ticket.codes.length;
   const createdDate = useMemo(() => {
     const d = new Date(item.ticket.createdAt._seconds * 1000);
-    return d.toLocaleDateString();
+    return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
   }, [item.ticket.createdAt._seconds]);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(item.ticket.ticketId);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setTimeout(() => setCopied(false), 2000);
     } catch (e) {
-      // fallback
       alert("No se pudo copiar el ID");
     }
   };
 
   const handlerDelete = async () => {
-    try {
-      await deleteTicket(item.user, item.profile, item.ticket.ticketId);
-    } catch (error) {
-      alert("Error al eliminar el ticket: " + error);
+    if (window.confirm("¿Estás seguro de que quieres eliminar este ticket?")) {
+      try {
+        await deleteTicket(item.user, item.profile, item.ticket.ticketId);
+      } catch (error) {
+        alert("Error al eliminar el ticket: " + error);
+      }
     }
   };
 
   return (
-    <li className="bg-white border border-slate-200 rounded-md shadow-sm px-4 py-4 sm:px-6 transition-all hover:shadow-md hover:border-slate-300">
-      <div className="grid grid-cols-12 items-center gap-3">
-        {/* Zona Izquierda: Identificación */}
-  <div className="col-span-12 sm:col-span-5 flex items-center gap-3 min-w-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="font-semibold text-slate-900 truncate max-w-[200px]" title={item.ticket.ticketId}>
-              {truncateMiddle(item.ticket.ticketId)}
+    <Card className="flex flex-col">
+      {/* Encabezado */}
+      <div className="flex justify-between items-start p-3 bg-slate-50 border-b border-slate-200 rounded-t-lg">
+        <div className="flex flex-col">
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-lg font-bold text-slate-800 capitalize">{item.user}</h3>
+            <span className="text-sm font-medium text-slate-600 capitalize">({item.profile})</span>
+          </div>
+          <div className="mt-1 flex items-center gap-2">
+            <span className="font-mono text-xs text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded-md">
+              ID: {item.ticket.ticketId.substring(0, 8)}...
             </span>
             <button
               type="button"
               onClick={handleCopy}
-              className="text-slate-500 hover:text-slate-700"
-              aria-label="Copiar ID"
-              title="Copiar ID"
+              className="text-slate-400 hover:text-primary-600 transition-colors"
+              aria-label="Copiar ID completo"
+              title="Copiar ID completo"
             >
               <FaRegCopy />
             </button>
-            {copied && <span className="text-xs text-green-600">¡Copiado!</span>}
+            {copied && <span className="text-xs text-green-600 font-semibold">¡Copiado!</span>}
           </div>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold uppercase bg-blue-50 text-blue-700 border border-blue-200">
-            <FaUser className="text-slate-500" /> {item.user}
-          </span>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-            Perfil: {item.profile}
-          </span>
         </div>
-
-        {/* Zona Central: Metadatos */}
-        <div className="col-span-12 sm:col-span-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
-          <span className="inline-flex items-center gap-1" title="Fecha de creación">
-            <FaRegCalendarAlt />
-            Creado: {createdDate}
-          </span>
-          <span className="inline-flex items-center gap-1" title="Total de códigos">
-            <FaCode />
-            {totalCodes} Códigos
-          </span>
-        </div>
-
-        {/* Zona Derecha: Acciones */}
-        <div className="col-span-12 sm:col-span-3 flex items-center justify-start sm:justify-end gap-2 relative">
-          <Button variant="outline" onClick={() => printPDF(item)}>
-            <FaPrint />
-            <span>Imprimir</span>
-          </Button>
-
-          <IconButton ariaLabel="Más opciones" onClick={() => setMenuOpen(v => !v)}>
+        <div className="relative">
+          <button onClick={() => setMenuOpen(v => !v)} className="p-2 text-slate-500 hover:bg-slate-200 rounded-md">
             <FaEllipsisV />
-          </IconButton>
-
+          </button>
           {menuOpen && (
-            <div className="absolute right-0 top-10 z-10 w-48 rounded-md border border-slate-200 bg-white shadow-lg py-1">
+            <div className="absolute right-0 top-full mt-1 z-10 w-48 rounded-md border border-slate-200 bg-white shadow-lg py-1">
               <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                onClick={() => { setMenuOpen(false); /* renombrado de CMD */ cmdAddUser(item); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                onClick={() => { setMenuOpen(false); cmdAddUser(item); }}
               >
                 <FaFileCode className="text-slate-500" />
                 <span>Copiar CMD</span>
@@ -119,7 +93,30 @@ const TicketRow: React.FC<Props> = ({ item }) => {
           )}
         </div>
       </div>
-    </li>
+
+      {/* Cuerpo */}
+      <div className="flex-grow p-3 grid grid-cols-2 gap-3 items-center">
+        <div className="flex flex-col text-sm">
+          <span className="text-slate-500 inline-flex items-center gap-1.5"><FaRegCalendarAlt /> Creado</span>
+          <span className="font-semibold text-slate-700">{createdDate}</span>
+        </div>
+        <div className="flex flex-col text-sm">
+          <span className="text-slate-500 inline-flex items-center gap-1.5"><FaCode /> Códigos</span>
+          <span className="font-semibold text-slate-700">{totalCodes}</span>
+        </div>
+      </div>
+
+      {/* Pie de página */}
+      <div className="border-t border-slate-200 bg-slate-50 px-3 py-2 text-center rounded-b-lg">
+        <button
+          onClick={() => printPDF(item)}
+          className="w-full text-sm font-semibold text-primary-600 hover:text-primary-800 flex items-center justify-center gap-2 cursor-pointer mb-2"
+        >
+          <FaPrint />
+          Imprimir Tickets
+        </button>
+      </div>
+    </Card>
   );
 };
 
