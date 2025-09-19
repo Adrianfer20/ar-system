@@ -111,8 +111,8 @@ const SalesPage: React.FC = () => {
     return allSales.filter(s => {
       const userMatch = selectedUser === "all" || s.user === selectedUser;
       if (mode === "day") {
-  const dateKey = formatLocalDate(s.usedAt);
-  const dateMatch = !selectedDate || dateKey === selectedDate;
+        const dateKey = formatLocalDate(s.usedAt);
+        const dateMatch = !selectedDate || dateKey === selectedDate;
         return userMatch && dateMatch;
       }
       return userMatch;
@@ -160,16 +160,16 @@ const SalesPage: React.FC = () => {
 
   return (
     <Page>
-  <PageHeader title="Resumen Diario" subtitle="Análisis de tickets utilizados por el personal." />
+      <PageHeader title="Resumen Diario" subtitle="Análisis de tickets utilizados por el personal." />
 
       {/* Filtros */}
-  <PageSection bodyClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <PageSection bodyClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
           <select
             value={selectedUser}
             onChange={(e) => setSelectedUser(e.target.value)}
-            className="w-full border-gray-300 rounded-md p-2 shadow-sm"
+            className="w-full border-gray-300 rounded-md p-2 shadow-sm capitalize"
           >
             <option value="all">Todos los usuarios</option>
             {users.map(u => <option key={u} value={u}>{u}</option>)}
@@ -181,7 +181,7 @@ const SalesPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setMode("day")}
-              className={`px-3 py-2 text-sm font-medium ${mode === "day" ? "bg-gray-900 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+              className={`px-3 py-2 text-sm font-medium ${mode === "day" ? "bg-yellow-500 text-primary" : "bg-white text-gray-700 hover:bg-gray-50"}`}
               aria-pressed={mode === "day"}
             >
               Día
@@ -189,7 +189,7 @@ const SalesPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setMode("week")}
-              className={`px-3 py-2 text-sm font-medium border-l border-gray-300 ${mode === "week" ? "bg-gray-900 text-white" : "bg-white text-gray-700 hover:bg-gray-50"}`}
+              className={`px-3 py-2 text-sm font-medium border-l border-gray-300 ${mode === "week" ? "bg-yellow-500 text-primary" : "bg-white text-gray-700 hover:bg-gray-50"}`}
               aria-pressed={mode === "week"}
             >
               Semana
@@ -199,24 +199,24 @@ const SalesPage: React.FC = () => {
         {mode === "day" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fecha (opcional)</label>
-      <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-        className="w-full sm:flex-1 border-gray-300 rounded-md p-2 shadow-sm min-w-0"
+                className="w-full sm:flex-1 border-gray-300 rounded-md p-2 shadow-sm min-w-0"
               />
               <button
                 type="button"
                 onClick={() => setSelectedDate(formatLocalDate(new Date()))}
-        className="px-2 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50 flex-shrink-0"
+                className="p-2 text-sm bg-yellow-500 border border-gray-300 rounded hover:bg-yellow-600 hover:text-white flex-shrink-0 cursor-pointer"
               >
                 Hoy
               </button>
               <button
                 type="button"
                 onClick={() => setSelectedDate("")}
-        className="px-2 py-2 text-sm text-gray-600 hover:text-gray-800 flex-shrink-0"
+                className="px-2 py-2 text-sm text-gray-600 hover:text-gray-800 flex-shrink-0"
               >
                 Limpiar
               </button>
@@ -226,7 +226,7 @@ const SalesPage: React.FC = () => {
       </PageSection>
 
       {/* Ventas */}
-      <div className="px-4 md:px-6">
+      <div className="">
         {Object.entries(groupedSales).length === 0 ? (
           <P variant="muted">No hay ventas para los filtros seleccionados.</P>
         ) : (
@@ -348,13 +348,13 @@ const SalesPage: React.FC = () => {
                           </div>
 
                           {isExpanded && (
-              <div className="mt-4 space-y-3">
+                            <div className="mt-4 space-y-3">
                               {Object.entries(salesByProfile).map(([profile, sales]) => (
                                 <div key={profile}>
                                   <P className="text-gray-700 font-medium">{profile} <span className="text-gray-500 font-normal">({sales.length})</span></P>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                                  <div className="flex flex-wrap gap-2 mt-2">
                                     {sales.map((s, idx) => (
-                    <span key={idx} className="bg-gray-100 px-2 py-1 rounded text-gray-600 text-[13px] break-words">
+                                      <span key={idx} className="bg-gray-100 px-2 py-1 rounded text-gray-600 text-[13px] break-words">
                                         {s.code}
                                       </span>
                                     ))}

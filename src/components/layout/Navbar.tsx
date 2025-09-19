@@ -51,8 +51,8 @@ const Navbar: React.FC = () => {
                 : "flex items-center gap-4"
             }
           >
-            <Link to="/products" className="text-xl font-bold text-white">
-              Logo
+            <Link to="/products" className="text-xl font-extrabold text-white uppercase">
+              A<span className="text-yellow-500">|</span>R System
             </Link>
 
             {isRegisterPage && (
