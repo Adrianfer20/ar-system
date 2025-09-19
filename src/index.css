@@ -19,3 +19,25 @@
   --radius-xl: 1.5rem;
   --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
+
+/* Utilidad para inputs tipo date: ocultar icono nativo y dejar solo el custom */
+.date-input::-webkit-calendar-picker-indicator {
+  opacity: 0; /* oculta el icono del picker en Chrome */
+}
+.date-input::-webkit-inner-spin-button,
+.date-input::-webkit-clear-button {
+  display: none;
+}
+.date-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+
+/* Utilidad para select: ocultar flecha nativa y permitir icono custom */
+.select-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+}

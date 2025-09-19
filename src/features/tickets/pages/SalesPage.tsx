@@ -4,6 +4,7 @@ import { Page, PageHeader } from "@/components/ui/Page";
 import Card, { CardHeader as UICardHeader, CardBody as UICardBody } from "@/components/ui/Card";
 import { P } from "@/components/ui/Typography";
 import { PageSection } from "@/components/ui/Section";
+import SalesMobileFilter from "@/features/tickets/components/SalesMobileFilter";
 
 // --- TIPOS Y HELPERS ---
 interface Sale {
@@ -86,7 +87,7 @@ function prevDateKey(key: string) {
 const SalesPage: React.FC = () => {
   const { tickets } = useTickets();
   const [selectedUser, setSelectedUser] = useState("all");
-  const [selectedDate, setSelectedDate] = useState(""); // YYYY-MM-DD
+  const [selectedDate, setSelectedDate] = useState(formatLocalDate(new Date())); // YYYY-MM-DD
   const [mode, setMode] = useState<"day" | "week">("day");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({}); // control de "ver más"
 
@@ -162,18 +163,35 @@ const SalesPage: React.FC = () => {
     <Page>
       <PageHeader title="Resumen Diario" subtitle="Análisis de tickets utilizados por el personal." />
 
-      {/* Filtros */}
-      <PageSection bodyClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Filtros - Mobile */}
+      <div className="sm:hidden mb-4">
+        <SalesMobileFilter
+          users={users}
+          selectedUser={selectedUser}
+          onChangeUser={setSelectedUser}
+          mode={mode}
+          onChangeMode={setMode}
+          selectedDate={selectedDate}
+          onChangeDate={setSelectedDate}
+          onClear={() => { setSelectedUser("all"); setMode("day"); setSelectedDate(""); }}
+        />
+      </div>
+
+      {/* Filtros - Desktop */}
+      <PageSection className="hidden sm:block" bodyClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Usuario</label>
-          <select
-            value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
-            className="w-full border-gray-300 rounded-md p-2 shadow-sm capitalize"
-          >
-            <option value="all">Todos los usuarios</option>
-            {users.map(u => <option key={u} value={u}>{u}</option>)}
-          </select>
+          <div className="relative">
+            <select
+              value={selectedUser}
+              onChange={(e) => setSelectedUser(e.target.value)}
+              className="select-input w-full border-gray-300 rounded-md p-2 pr-9 shadow-sm capitalize"
+            >
+              <option value="all">Todos los usuarios</option>
+              {users.map(u => <option key={u} value={u}>{u}</option>)}
+            </select>
+            <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-gray-600">�</span>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Vista</label>
@@ -204,7 +222,7 @@ const SalesPage: React.FC = () => {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full sm:flex-1 border-gray-300 rounded-md p-2 shadow-sm min-w-0"
+                className="date-input w-full sm:flex-1 border-gray-300 rounded-md p-2 shadow-sm min-w-0"
               />
               <button
                 type="button"

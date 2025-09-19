@@ -1,12 +1,13 @@
 
 
 import React, { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FiMenu, FiX, FiLogOut } from "react-icons/fi";
 import { FaArrowLeft } from "react-icons/fa";
 import NavLinks from "../ui/NavLinks";
 import MobileNavbar from "../ui/MobileNavbar";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import Logo from "@/components/ui/Logo";
 
 /* 🔹 Links según rol */
 const adminLinks = [
@@ -51,9 +52,7 @@ const Navbar: React.FC = () => {
                 : "flex items-center gap-4"
             }
           >
-            <Link to="/products" className="text-xl font-extrabold text-white uppercase">
-              A<span className="text-yellow-500">|</span>R System
-            </Link>
+            <Logo size="md" tone="light" />
 
             {isRegisterPage && (
               <button
