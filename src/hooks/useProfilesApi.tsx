@@ -2,6 +2,7 @@
 import { apiRequest } from "@/lib/api.service";
 import type { Timestamp } from "firebase/firestore";
 import { useCallback, useState } from "react";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 export interface Profile {
   name: string;
@@ -13,6 +14,7 @@ export interface Profile {
 export function useProfilesApi() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const getProfiles = useCallback(async (userName: string): Promise<Profile[]> => {
     setLoading(true);
@@ -38,6 +40,7 @@ export function useProfilesApi() {
   }, []);
 
   const createProfile = async (userName: string, data: Profile) => {
+  if (user?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     return apiRequest<Profile>(`/users/${userName}/profiles`, {
       method: "POST",
       body: JSON.stringify(data),
@@ -45,6 +48,7 @@ export function useProfilesApi() {
   };
 
   const updateProfile = async (userName: string, profileName: string, data: Partial<Profile>) => {
+  if (user?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     return apiRequest<Profile>(`/users/${userName}/profiles/${profileName}`, {
       method: "PUT",
       body: JSON.stringify(data),
@@ -52,6 +56,7 @@ export function useProfilesApi() {
   };
 
   const deleteProfile = async (userName: string, profileName: string) => {
+  if (user?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     return apiRequest<{ message: string }>(`/users/${userName}/profiles/${profileName}`, {
       method: "DELETE",
     });

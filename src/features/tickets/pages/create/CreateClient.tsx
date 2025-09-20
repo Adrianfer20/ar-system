@@ -102,7 +102,7 @@ const RegisterClientPage: React.FC<ChildProps> = ({ setActiveTab }) => {
           </CardBody>
 
           <div className="bg-slate-50 px-6 py-4" aria-live="polite">
-            <Button type="submit" fullWidth isLoading={loading} disabled={loading}>
+            <Button type="submit" fullWidth isLoading={loading} disabled={loading || (currentUser?.role !== 'admin')}>
               Registrar cliente
             </Button>
             {error && (

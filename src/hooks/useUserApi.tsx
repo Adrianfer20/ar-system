@@ -3,6 +3,7 @@ import { apiRequest } from "@/lib/api.service";
 import type { Role } from "@/types/Role";
 import type { User } from "@/types/User.type";
 import { useCallback, useState } from "react";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 interface CreateUserPayload {
   userName: string;
@@ -16,6 +17,7 @@ interface CreateUserPayload {
 // hooks/useUsersApi.ts
 export function useUsersApi() {
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const getUsers = useCallback(async (): Promise<User[]> => {
     setLoading(true);
@@ -36,6 +38,7 @@ export function useUsersApi() {
   };
 
   const createUser = async (data: CreateUserPayload) => {
+  if (user?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     setLoading(true);
     try {
       return await apiRequest<User>("/users", {

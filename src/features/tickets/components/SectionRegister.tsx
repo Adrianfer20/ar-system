@@ -4,18 +4,21 @@ import { useTickets } from "@/context/TicketsContext";
 import TicketFilters from "./TicketFilters";
 import ClientList from "./ClientList";
 import { H2, P } from "@/components/ui/Typography";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 const SectionRegister = () => {
   const { tickets, loading, error } = useTickets();
+  const { user } = useAuth();
 
   const [selectedUser, setSelectedUser] = useState("all");
   const [selectedProfile, setSelectedProfile] = useState("all");
   const [codeFilter, setCodeFilter] = useState("");
 
-  const users = useMemo(
-    () => (tickets ? Array.from(new Set(tickets.map((t) => t.user))) : []),
-    [tickets]
-  );
+  const users = useMemo(() => {
+    const all = tickets ? Array.from(new Set(tickets.map((t) => t.user))) : [];
+    if (user?.role === 'client') return all.filter(u => u.toLowerCase() === (user.displayName ?? '').toLowerCase());
+    return all;
+  }, [tickets, user]);
   const profiles = useMemo(
     () => (tickets ? Array.from(new Set(tickets.map((t) => t.profile))) : []),
     [tickets]
@@ -44,7 +47,10 @@ const SectionRegister = () => {
         selectedUser={selectedUser}
         selectedProfile={selectedProfile}
         codeFilter={codeFilter}
-        onUserChange={setSelectedUser}
+        onUserChange={(v) => {
+          if (user?.role === 'client') return;
+          setSelectedUser(v);
+        }}
         onProfileChange={setSelectedProfile}
         onCodeChange={setCodeFilter}
       />

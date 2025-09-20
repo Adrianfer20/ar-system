@@ -8,6 +8,7 @@ import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import Card, { CardBody } from "@/components/ui/Card";
 import { H2, P } from "@/components/ui/Typography";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 interface TicketPayload {
   quantity: number;
@@ -19,6 +20,7 @@ interface ChildProps {
 
 const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
   const { createTicket, getAllTickets } = useTickets();
+  const { user } = useAuth();
 
   const { users, loading: loadingUsers } = useUsersData();
   const [selectedUser, setSelectedUser] = useState("");
@@ -108,7 +110,7 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
           </CardBody>
 
           <div className="bg-slate-50 px-6 py-4" aria-live="polite">
-            <Button
+      <Button
               type="submit"
               fullWidth
               disabled={
@@ -117,7 +119,8 @@ const CreateTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
                 quantity < 1 ||
                 creating ||
                 loadingUsers ||
-                loadingProfiles
+        loadingProfiles ||
+        user?.role !== 'admin'
               }
               isLoading={creating}
             >

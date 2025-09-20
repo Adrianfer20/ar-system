@@ -10,6 +10,7 @@ import Select from "@/components/ui/Select";
 import FieldInput from "@/components/ui/FieldInput";
 import Button from "@/components/ui/Button";
 import { H2, P } from "@/components/ui/Typography";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 type ProfilePayload = {
   name: string;
@@ -31,6 +32,7 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
   // hook para usuarios
   const { getUsers } = useUsersApi();
   const { getAllTickets } = useTickets();
+  const { user } = useAuth();
 
 
   // selected user (userName)
@@ -174,7 +176,7 @@ const CreateProfile: React.FC<ChildProps> = ({ setActiveTab }) => {
 
           <div className="bg-slate-50 px-6 py-4" aria-live="polite">
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Button type="submit" fullWidth isLoading={creating} disabled={creating || loadingUsers}>
+              <Button type="submit" fullWidth isLoading={creating} disabled={creating || loadingUsers || user?.role !== 'admin'}>
                 Crear perfil
               </Button>
               <Button type="button" variant="outline" onClick={() => setForm(formDataInitial)} disabled={loadingUsers}>

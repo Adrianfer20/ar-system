@@ -17,7 +17,10 @@ const AppRoutes = () => {
           <Route index path="" element={<SalesPage />} />
           <Route path="tickets" element={<TicketsPage />} />
           <Route path="clientes" element={<ClientesPage />} />
-          <Route path="register" element={<RegisterPage />} />
+          {/* Solo admin puede acceder a /register */}
+          <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+            <Route path="register" element={<RegisterPage />} />
+          </Route>
           <Route path="settings" element={<p>Sección de Ajustes - En construcción</p>} />
         </Route>
       </Route>

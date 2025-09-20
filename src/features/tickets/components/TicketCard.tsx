@@ -6,6 +6,7 @@ import useCMD from "../hooks/useCMD";
 import Button, { IconButton } from "@/components/ui/Button";
 import Card, { CardBody, CardFooter } from "@/components/ui/Card";
 import { H3, P } from "@/components/ui/Typography";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 interface TicketCardProps {
   item: FullTicket
@@ -17,6 +18,7 @@ export default function TicketCard({ item }: TicketCardProps) {
   const { deleteTicket } = useTickets();
   const { printPDF } = usePdf()
   const { cmdAddUser } = useCMD()
+  const { user } = useAuth();
 
   const HandlerDelete = async () => {
     try {
@@ -72,9 +74,11 @@ export default function TicketCard({ item }: TicketCardProps) {
             <FaTerminal />
             <span>CMD</span>
           </Button>
-          <IconButton ariaLabel="Eliminar Ticket" onClick={HandlerDelete} className="text-red-600 hover:text-red-700">
-            <FaTrashAlt size={16} />
-          </IconButton>
+          {user?.role === 'admin' && (
+            <IconButton ariaLabel="Eliminar Ticket" onClick={HandlerDelete} className="text-red-600 hover:text-red-700">
+              <FaTrashAlt size={16} />
+            </IconButton>
+          )}
         </div>
       </CardFooter>
       </Card>

@@ -5,6 +5,7 @@ import { usePdf } from "../hooks/usePdf";
 import useCMD from "../hooks/useCMD";
 import Card from "@/components/ui/Card";
 import { FaPrint, FaTrashAlt, FaEllipsisV, FaRegCopy, FaCode, FaRegCalendarAlt, FaFileCode } from "react-icons/fa";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 interface Props {
   item: FullTicket;
@@ -12,6 +13,7 @@ interface Props {
 
 const TicketRow: React.FC<Props> = ({ item }) => {
   const { deleteTicket } = useTickets();
+  const { user } = useAuth();
   const { printPDF } = usePdf();
   const { cmdAddUser } = useCMD();
 
@@ -82,13 +84,15 @@ const TicketRow: React.FC<Props> = ({ item }) => {
                 <FaFileCode className="text-slate-500" />
                 <span>Copiar CMD</span>
               </button>
-              <button
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                onClick={() => { setMenuOpen(false); handlerDelete(); }}
-              >
-                <FaTrashAlt />
-                <span>Eliminar</span>
-              </button>
+              {user?.role === "admin" && (
+                <button
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                  onClick={() => { setMenuOpen(false); handlerDelete(); }}
+                >
+                  <FaTrashAlt />
+                  <span>Eliminar</span>
+                </button>
+              )}
             </div>
           )}
         </div>

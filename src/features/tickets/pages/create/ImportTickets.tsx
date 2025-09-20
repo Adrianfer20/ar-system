@@ -8,6 +8,7 @@ import { H2, P } from "@/components/ui/Typography";
 import { useFormHandler } from "@/hooks/useFormHandler";
 import { useTickets } from "@/context/TicketsContext";
 import type { Code } from "@/types/Code.type";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 interface ChildProps {
     setActiveTab: React.Dispatch<React.SetStateAction<string>>;
@@ -34,6 +35,7 @@ function toCodes(names: string[]): Code[] {
 
 const ImportTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
     const { importCodes, getAllTickets } = useTickets();
+    const { user } = useAuth();
     const { users, loading: loadingUsers } = useUsersData();
 
     const [selectedUser, setSelectedUser] = useState("");
@@ -136,7 +138,7 @@ const ImportTickets: React.FC<ChildProps> = ({ setActiveTab }) => {
                         <Button
                             type="submit"
                             fullWidth
-                            disabled={!selectedUser || !selectedProfile || codes.length === 0 || submitting}
+                            disabled={!selectedUser || !selectedProfile || codes.length === 0 || submitting || user?.role !== 'admin'}
                             isLoading={submitting}
                         >
                             Importar códigos

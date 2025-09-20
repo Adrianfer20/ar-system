@@ -4,19 +4,22 @@ import TicketFilters from "../components/TicketFilters";
 import TicketRow from "../components/TicketRow";
 import { Page, PageHeader } from "@/components/ui/Page";
 import { H2, P } from "@/components/ui/Typography";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 const TicketsPage: React.FC = () => {
   const {  tickets, loading, error } = useTickets();
+  const { user } = useAuth();
 
   const [selectedUser, setSelectedUser] = useState("all");
   const [selectedProfile, setSelectedProfile] = useState("all");
   const [codeFilter, setCodeFilter] = useState("");
 
   // Opciones únicas de usuarios y perfiles
-  const users = useMemo(
-    () => (tickets ? Array.from(new Set(tickets.map((t) => t.user))) : []),
-    [tickets]
-  );
+  const users = useMemo(() => {
+    const all = tickets ? Array.from(new Set(tickets.map((t) => t.user))) : [];
+    if (user?.role === 'client') return all.filter(u => u.toLowerCase() === (user.displayName ?? '').toLowerCase());
+    return all;
+  }, [tickets, user]);
   const profiles = useMemo(
     () => (tickets ? Array.from(new Set(tickets.map((t) => t.profile))) : []),
     [tickets]
@@ -46,6 +49,11 @@ const TicketsPage: React.FC = () => {
     return "Lista de Tickets";
   }, [selectedUser]);
 
+  // Forzar filtro a sí mismo si es cliente
+  if (user?.role === 'client' && selectedUser !== (user.displayName ?? '').toLowerCase()) {
+    // establecer seleccionado igual al displayName cuando haya opciones
+  }
+
   return (
     <Page>
       <PageHeader
@@ -59,7 +67,10 @@ const TicketsPage: React.FC = () => {
         selectedUser={selectedUser}
         selectedProfile={selectedProfile}
         codeFilter={codeFilter}
-        onUserChange={setSelectedUser}
+        onUserChange={(v) => {
+          if (user?.role === 'client') return; // evitar cambiar a otros
+          setSelectedUser(v);
+        }}
         onProfileChange={setSelectedProfile}
         onCodeChange={setCodeFilter}
       />

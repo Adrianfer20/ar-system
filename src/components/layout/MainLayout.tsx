@@ -3,14 +3,17 @@ import { FiUsers, FiFileText, FiSettings, FiArchive, FiTag } from "react-icons/f
 import Navbar from "@/components/layout/Navbar";
 import Sidebar from "./Sidebar";
 import { Toaster } from "react-hot-toast";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 const MainLayout = () => {
+  const { user } = useAuth();
   const sections = [
-  { path: "/", label: "Ventas", icon: <FiFileText /> },
-  { path: "/tickets", label: "Tickets", icon: <FiTag /> },
-  { path: "/clientes", label: "Clientes", icon: <FiUsers /> },
-  { path: "/register", label: "Registro", icon: <FiArchive /> },
-  { path: "/settings", label: "Ajustes", icon: <FiSettings /> },
+    { path: "/", label: "Ventas", icon: <FiFileText /> },
+    { path: "/tickets", label: "Tickets", icon: <FiTag /> },
+    { path: "/clientes", label: "Clientes", icon: <FiUsers /> },
+    // Mostrar 'Registro' solo si es admin
+    ...(user?.role === "admin" ? [{ path: "/register", label: "Registro", icon: <FiArchive /> }] : []),
+    { path: "/settings", label: "Ajustes", icon: <FiSettings /> },
   ];
   
 

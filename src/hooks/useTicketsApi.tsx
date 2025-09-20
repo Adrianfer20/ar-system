@@ -1,6 +1,7 @@
 // hooks/useTicketsApi.ts
 import { apiRequest } from "@/lib/api.service";
 import { useState } from "react";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { db, USERS_COLLECTION } from "@/lib/firebase.config";
 import { addDoc, collection, doc, serverTimestamp } from "firebase/firestore";
 import { useUsersApi } from "./useUserApi";
@@ -31,8 +32,23 @@ export function useTicketsApi() {
   const [tickets, setTickets] = useState<FullTicket[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user: authUser } = useAuth();
 
   const { getUsers } = useUsersApi();
+  // Derivar nombres propios aceptables (displayName, parte local de email, y userName mapeado por email desde backend)
+  const getSelfUserNames = (usersList?: User[]): string[] => {
+    const names = new Set<string>();
+    const dn = authUser?.displayName?.trim();
+    if (dn) names.add(dn.toLowerCase());
+    const email = authUser?.email?.toLowerCase();
+    if (email) {
+      const local = email.split("@")[0];
+      if (local) names.add(local);
+      const match = usersList?.find(u => (u.email || "").toLowerCase() === email);
+      if (match?.userName) names.add(match.userName.toLowerCase());
+    }
+    return Array.from(names);
+  };
 
   // -----------------------------
   // Obtener todos los tickets de todos los users/profiles
@@ -43,8 +59,18 @@ export function useTicketsApi() {
     try {
       const users: User[] = await getUsers();
 
+      // Si es cliente, limitar a sus propios usuarios (por nombres derivados y/o email)
+      let targetUsers = users;
+      if (authUser?.role === "client") {
+        const selfNames = new Set(getSelfUserNames(users));
+        const email = authUser.email?.toLowerCase();
+        targetUsers = users.filter(u =>
+          selfNames.has(u.userName.toLowerCase()) || (!!email && (u.email || "").toLowerCase() === email)
+        );
+      }
+
       const perUserTickets = await Promise.all(
-        users.map(async (user) => {
+        targetUsers.map(async (user) => {
           const profiles = await apiRequest<Profile[]>(
             `/users/${user.userName}/profiles`
           );
@@ -79,8 +105,14 @@ export function useTicketsApi() {
       );
 
       const all = perUserTickets.flat();
-      setTickets(all);
-      return all;
+      // Filtro final por seguridad: si es client, asegurar solo sus tickets
+      let scoped = all;
+      if (authUser?.role === "client") {
+        const selfNames = new Set(getSelfUserNames(users));
+        scoped = all.filter(t => selfNames.has(t.user.toLowerCase()));
+      }
+      setTickets(scoped);
+      return scoped;
     } catch (err: any) {
       setError(err.message ?? 'Error obteniendo tickets');
       return [];
@@ -94,6 +126,10 @@ export function useTicketsApi() {
   // -----------------------------
   const getTickets = async (userName: string, profileName: string): Promise<Ticket[]> => {
     if (!userName || !profileName) throw new Error("getTickets requiere userName y profileName");
+    if (authUser?.role === "client") {
+      const allowed = new Set(getSelfUserNames());
+      if (!allowed.has(userName.toLowerCase())) throw new Error("No autorizado para consultar tickets de otros usuarios");
+    }
     setLoading(true);
     setError(null);
     try {
@@ -114,6 +150,7 @@ export function useTicketsApi() {
     profileName: string,
     codes: { code: string; status: boolean; usedAt: { _seconds: number; _nanoseconds: number } }[]
   ) => {
+  if (authUser?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     if (!userName || !profileName) throw new Error("importCodes requiere userName y profileName");
     if (!codes?.length) throw new Error("No hay códigos para importar");
     setError(null);
@@ -140,6 +177,10 @@ export function useTicketsApi() {
 
   const getTicket = async (userName: string, profileName: string, ticketId: string): Promise<Ticket | null> => {
     if (!userName || !profileName || !ticketId) throw new Error("getTicket requiere todos los parámetros");
+    if (authUser?.role === "client") {
+      const allowed = new Set(getSelfUserNames());
+      if (!allowed.has(userName.toLowerCase())) throw new Error("No autorizado para consultar tickets de otros usuarios");
+    }
     setError(null);
     try {
       return await apiRequest<Ticket>(
@@ -152,6 +193,7 @@ export function useTicketsApi() {
   };
 
   const createTicket = async (userName: string, profileName: string, data: { quantity: number }) => {
+  if (authUser?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     if (!userName || !profileName) throw new Error("createTicket requiere userName y profileName");
     setError(null);
     return apiRequest<Ticket>(`/users/${userName}/profiles/${profileName}/tickets`, {
@@ -161,6 +203,7 @@ export function useTicketsApi() {
   };
 
   const updateCode = async (userName: string, profileName: string, ticketId: string, codeValue: string) => {
+  if (authUser?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     if (!userName || !profileName || !ticketId || !codeValue) throw new Error("updateCode requiere todos los parámetros");
     setError(null);
     return apiRequest<Ticket>(
@@ -170,6 +213,7 @@ export function useTicketsApi() {
   };
 
   const updateCodeByValue = async (userName: string, profileName: string, codeValue: string) => {
+  if (authUser?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     if (!userName || !profileName || !codeValue) throw new Error("updateCodeByValue requiere todos los parámetros");
     setError(null);
     return apiRequest<Ticket>(
@@ -179,6 +223,7 @@ export function useTicketsApi() {
   };
 
   const deleteTicket = async (userName: string, profileName: string, ticketId: string) => {
+  if (authUser?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     if (!userName || !profileName || !ticketId) {
       throw new Error("deleteTicket requiere todos los parámetros");
     }
@@ -213,6 +258,7 @@ export function useTicketsApi() {
   };
 
   const deleteProfile = async (user: string, profile: string, ticketIds: string[]) => {
+    if (authUser?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     setLoading(true);
     setError(null);
     try {
@@ -239,6 +285,7 @@ export function useTicketsApi() {
   };
 
   const deleteClient = async (user: string) => {
+    if (authUser?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
     setLoading(true);
     setError(null);
     try {

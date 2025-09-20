@@ -3,6 +3,7 @@ import type { FullTicket } from "@/hooks/useTicketsApi";
 import React, { useMemo, useState } from "react";
 import { BsFolder, BsInfoCircle, BsPersonCircle, BsTicketPerforated, BsThreeDotsVertical, BsChevronDown, BsChevronRight, BsPencil, BsTrash, BsEye, BsClockHistory } from "react-icons/bs";
 import { useTickets } from '@/context/TicketsContext';
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import Button from "@/components/ui/Button";
 import Card, { CardHeader, CardBody } from "@/components/ui/Card";
 
@@ -41,6 +42,7 @@ function groupByUserAndProfile(tickets: FullTicket[]): GroupedTickets[] {
 
 const ClientList: React.FC<Props> = ({ tickets }) => {
   const { deleteTicket, deleteProfile, deleteClient } = useTickets();
+  const { user } = useAuth();
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   // Estados de expansión
   const [expandedUsers, setExpandedUsers] = useState<Record<string, boolean>>({});
@@ -156,15 +158,19 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
                   {openMenu.type === 'user' && openMenu.key === group.user && (
                     <div className="relative">
                       <div className="absolute right-0 z-10 mt-2 w-48 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
-                        <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2" onClick={() => setOpenMenu({ type: null })}>
-                          <BsPencil className="h-4 w-4 text-slate-500" /> Editar Cliente
-                        </button>
+                        {user?.role === 'admin' && (
+                          <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2" onClick={() => setOpenMenu({ type: null })}>
+                            <BsPencil className="h-4 w-4 text-slate-500" /> Editar Cliente
+                          </button>
+                        )}
                         <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2" onClick={() => setOpenMenu({ type: null })}>
                           <BsEye className="h-4 w-4 text-slate-500" /> Ver Detalles
                         </button>
-                        <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 text-red-600" onClick={() => { setOpenMenu({ type: null }); handleDeleteClient(group.user); }}>
-                          <BsTrash className="h-4 w-4" /> Eliminar Cliente
-                        </button>
+                        {user?.role === 'admin' && (
+                          <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 text-red-600" onClick={() => { setOpenMenu({ type: null }); handleDeleteClient(group.user); }}>
+                            <BsTrash className="h-4 w-4" /> Eliminar Cliente
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
@@ -218,15 +224,19 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
                               </button>
                               {openMenu.type === 'profile' && openMenu.key === key && (
                                 <div className="absolute right-0 z-10 mt-2 w-52 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
-                                  <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2" onClick={() => setOpenMenu({ type: null })}>
-                                    <BsPencil className="h-4 w-4 text-slate-500" /> Editar Perfil
-                                  </button>
+                                  {user?.role === 'admin' && (
+                                    <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2" onClick={() => setOpenMenu({ type: null })}>
+                                      <BsPencil className="h-4 w-4 text-slate-500" /> Editar Perfil
+                                    </button>
+                                  )}
                                   <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2" onClick={() => setOpenMenu({ type: null })}>
                                     <BsEye className="h-4 w-4 text-slate-500" /> Duplicar Perfil
                                   </button>
-                                  <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 text-red-600" onClick={() => { setOpenMenu({ type: null }); handleDeleteProfile(group.user, profile, profileTickets); }}>
-                                    <BsTrash className="h-4 w-4" /> Eliminar Perfil
-                                  </button>
+                                  {user?.role === 'admin' && (
+                                    <button className="w-full px-3 py-2 text-left text-sm hover:bg-slate-50 flex items-center gap-2 text-red-600" onClick={() => { setOpenMenu({ type: null }); handleDeleteProfile(group.user, profile, profileTickets); }}>
+                                      <BsTrash className="h-4 w-4" /> Eliminar Perfil
+                                    </button>
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -241,13 +251,15 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
                                 className="flex justify-between items-center p-2 rounded-md bg-slate-50/80 hover:bg-slate-100"
                               >
                                 <div className="flex items-center gap-2 min-w-0">
-                                  <input
-                                    aria-label="Seleccionar ticket"
-                                    type="checkbox"
-                                    checked={selectedTickets.includes(item.ticket.ticketId)}
-                                    onChange={() => handleSelectTicket(item.ticket.ticketId)}
-                                    className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
-                                  />
+                                  {user?.role === 'admin' && (
+                                    <input
+                                      aria-label="Seleccionar ticket"
+                                      type="checkbox"
+                                      checked={selectedTickets.includes(item.ticket.ticketId)}
+                                      onChange={() => handleSelectTicket(item.ticket.ticketId)}
+                                      className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                                    />
+                                  )}
                                   <BsTicketPerforated className="h-4 w-4 text-slate-500 flex-shrink-0" />
                                   <p className="text-xs text-slate-700 truncate">
                                     <span className="font-mono text-slate-900" title={item.ticket.ticketId}>
@@ -272,7 +284,7 @@ const ClientList: React.FC<Props> = ({ tickets }) => {
         );
       })}
 
-      {selectedTickets.length > 0 && (
+  {selectedTickets.length > 0 && user?.role === 'admin' && (
         <div className="sticky bottom-2 z-10 ml-auto mr-0 flex w-full justify-end">
           <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-white/95 px-3 py-2 shadow-md">
             <span className="text-sm text-slate-600">{selectedTickets.length} seleccionados</span>
