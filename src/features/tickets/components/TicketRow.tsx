@@ -4,7 +4,7 @@ import { useTickets } from "@/context/TicketsContext";
 import { usePdf } from "../hooks/usePdf";
 import useCMD from "../hooks/useCMD";
 import Card from "@/components/ui/Card";
-import { FaPrint, FaTrashAlt, FaEllipsisV, FaRegCopy, FaCode, FaRegCalendarAlt, FaFileCode, FaUser } from "react-icons/fa";
+import { FaPrint, FaTrashAlt, FaEllipsisV, FaRegCopy, FaCode, FaRegCalendarAlt, FaFileCode } from "react-icons/fa";
 
 interface Props {
   item: FullTicket;

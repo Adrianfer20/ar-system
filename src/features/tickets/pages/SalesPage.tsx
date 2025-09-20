@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useTickets } from "@/context/TicketsContext";
 import { Page, PageHeader } from "@/components/ui/Page";
-import Card, { CardHeader as UICardHeader, CardBody as UICardBody } from "@/components/ui/Card";
+import Card from "@/components/ui/Card";
 import { P } from "@/components/ui/Typography";
 import { PageSection } from "@/components/ui/Section";
 import SalesMobileFilter from "@/features/tickets/components/SalesMobileFilter";
@@ -268,7 +268,6 @@ const SalesPage: React.FC = () => {
                     const total = Object.values(salesByProfile).reduce((acc, arr) => acc + arr.length, 0);
                     const entries = Object.entries(salesByProfile).map(([profile, arr]) => ({ profile, count: arr.length }));
                     entries.sort((a, b) => b.count - a.count);
-                    const top = entries[0];
 
                     // Indicador de tendencia (modo día)
                     let trendColor = "border-gray-200";

@@ -1,5 +1,5 @@
 // components/Tabs.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useRef } from "react";
 import clsx from "clsx";
 
 type Tab = {
@@ -17,51 +17,15 @@ type TabsProps = {
   className?: string;
   /** Hace sticky la barra de tabs (top-0, fondo blanco) */
   sticky?: boolean;
-  /** Densidad visual */
-  size?: "sm" | "md";
-  /** Distribución en desktop */
-  variant?: "left" | "justified";
 };
 
 /**
  * Tabs mobile-first
- * - Móvil: píldoras con scroll horizontal
- * - Desktop: estilo subrayado con borde inferior
+ * - Píldoras responsivas que se ajustan al contenedor.
  * - Accesible (ARIA roles) y navegable con teclado (←/→/Home/End)
  */
-const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className, sticky = false, size = "md", variant = "left" }) => {
+const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className, sticky = false }) => {
   const listRef = useRef<HTMLUListElement | null>(null);
-  const ids = useMemo(() => tabs.map((t) => t.id), [tabs]);
-  const [indicator, setIndicator] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
-
-  const isSm = size === "sm";
-
-  // Asegura que el tab activo sea visible en móvil
-  useEffect(() => {
-    const list = listRef.current;
-    if (!list) return;
-    const activeIndex = ids.indexOf(activeTab);
-    if (activeIndex === -1) return;
-    const el = list.querySelector<HTMLButtonElement>(`button[data-tab-id="${activeTab}"]`);
-    // Solo intentar scroll si el contenedor realmente desborda horizontalmente
-    if (el && list.scrollWidth > list.clientWidth) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-    }
-  }, [activeTab, ids]);
-
-  // Posicionar indicador animado en desktop
-  useEffect(() => {
-    const update = () => {
-      const list = listRef.current;
-      if (!list) return;
-      const el = list.querySelector<HTMLButtonElement>(`button[data-tab-id="${activeTab}"]`);
-      if (!el) return;
-      setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [activeTab, tabs]);
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLUListElement> = (e) => {
     const list = listRef.current;
@@ -97,37 +61,20 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className, stick
   };
 
   return (
-  <nav aria-label="Tabs" className={clsx(sticky && "sticky top-0 z-10 bg-white")}> 
+    <nav aria-label="Tabs" className={clsx("bg-white p-1 rounded-lg shadow-sm border border-slate-200", sticky && "sticky top-0 z-10")}>
       <ul
         ref={listRef}
         role="tablist"
         onKeyDown={handleKeyDown}
-    className={clsx(
-  // Contenedor responsive: wrap en móvil (centrado), subrayado en md+
-  "relative flex flex-wrap items-center justify-center border-b border-slate-200",
-  isSm ? "gap-1 px-1 py-1" : "gap-2 px-1 py-2",
-  "md:flex-nowrap md:gap-0 md:px-0 md:py-0",
-  variant === "left" && "md:justify-start",
-  variant === "justified" && "md:w-full",
+        className={clsx(
+          "relative grid grid-cols-2 md:grid-cols-4 items-center justify-start gap-1",
           className
         )}
       >
-        {/* Indicador animado: visible solo en desktop */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute bottom-0 left-0 hidden h-0.5 bg-primary-600 transition-all duration-300 ease-out md:block"
-          style={{ width: indicator.width, transform: `translateX(${indicator.left}px)` }}
-        />
         {tabs.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
-            <li
-              key={tab.id}
-              className={clsx(
-                "md:shrink md:basis-auto",
-                variant === "justified" && "md:flex-1"
-              )}
-            >
+            <li key={tab.id}>
               <button
                 type="button"
                 role="tab"
@@ -138,28 +85,18 @@ const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onChange, className, stick
                 data-tab-id={tab.id}
                 onClick={() => onChange(tab.id)}
                 className={clsx(
-                  // Base móvil: píldoras
-                  "inline-flex items-center whitespace-nowrap rounded-md font-medium transition-colors cursor-pointer",
-                  isSm ? "gap-1.5 px-2 py-1 text-xs" : "gap-2 px-3 py-2 text-sm",
-                  "text-slate-700 hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500",
-                  // Activo en móvil: fondo primario
-                  isActive && "bg-primary-600 text-white",
-                  // Desktop: quitar píldora, usar subrayado
-                  isSm ? "md:rounded-none md:px-3 md:py-2 md:hover:bg-transparent" : "md:rounded-none md:px-4 md:py-3 md:hover:bg-transparent",
-                  // El subrayado visual en desktop lo maneja el indicador; mantenemos color del activo
-                  isActive && "md:bg-transparent md:text-primary-700",
-                  !isActive && "md:text-slate-700 md:hover:text-slate-900",
-                  variant === "justified" && "md:justify-center w-full"
+                  "inline-flex items-center justify-center w-full px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-150 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 cursor-pointer",
+                  isActive
+                    ? "bg-primary-600 text-white shadow-sm"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
                 )}
               >
                 {tab.icon && (
-                  <span aria-hidden className={clsx("flex-shrink-0",
-                    isActive ? "text-white" : "text-slate-500 md:text-inherit"
-                  )}>
+                  <span aria-hidden className={clsx("mr-2", isActive ? "text-white" : "text-slate-500")}>
                     {tab.icon}
                   </span>
                 )}
-                <span className={clsx("truncate md:max-w-none", isSm ? "max-w-[8rem]" : "max-w-[10rem]")}>{tab.label}</span>
+                <span className="truncate">{tab.label}</span>
               </button>
             </li>
           );
