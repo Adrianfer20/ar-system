@@ -4,6 +4,7 @@ import type { Role } from "@/types/Role";
 import type { User } from "@/types/User.type";
 import { useCallback, useState } from "react";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { sendPasswordReset } from "@/features/auth/services/auth.service";
 
 interface CreateUserPayload {
   userName: string;
@@ -50,5 +51,22 @@ export function useUsersApi() {
     }
   };
 
-  return { getUsers, getUser, createUser, loading };
+  const updateUser = async (userName: string, payload: Partial<User> & { role?: Role }) => {
+    if (user?.role !== "admin") throw new Error("No autorizado: requiere rol admin");
+    setLoading(true);
+    try {
+      return await apiRequest<User>(`/users/${userName}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetPasswordByEmail = async (email: string) => {
+    await sendPasswordReset(email);
+  };
+
+  return { getUsers, getUser, createUser, updateUser, resetPasswordByEmail, loading };
 }

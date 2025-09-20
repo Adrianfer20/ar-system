@@ -11,11 +11,17 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  updateProfile,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  sendPasswordResetEmail,
   type User,
 } from "firebase/auth";
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   setDoc,
@@ -78,4 +84,55 @@ export function listenToAuthState(onChange: (user: AppUser | null) => void) {
     onChange(mapFirebaseUser(fbUser, role));
   });
   return unsub;
+}
+
+// ----------------------------
+// Perfil del usuario actual (Firebase Auth + Firestore)
+// ----------------------------
+export async function updateOwnProfile(data: { displayName?: string; phoneNumber?: string }) {
+  const current = auth.currentUser;
+  if (!current) throw new Error("No hay usuario autenticado");
+
+  // Actualiza perfil de Firebase Auth (solo displayName está disponible en client)
+  if (data.displayName !== undefined) {
+    await updateProfile(current, { displayName: data.displayName });
+  }
+
+  // Persiste en Firestore dentro de Users/{uid}
+  const ref = doc(collection(db, USERS_COLLECTION), current.uid);
+  await setDoc(ref, { ...data, uid: current.uid }, { merge: true });
+}
+
+export async function getUserDoc(uid: string) {
+  const ref = doc(collection(db, USERS_COLLECTION), uid);
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
+}
+
+export async function updateUserDoc(uid: string, data: Record<string, unknown>) {
+  const ref = doc(collection(db, USERS_COLLECTION), uid);
+  await setDoc(ref, { ...data, uid }, { merge: true });
+}
+
+export async function listUsersByRole(role: Role) {
+  const q = query(collection(db, USERS_COLLECTION), where("role", "==", role));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Record<string, unknown>) }));
+}
+
+// ----------------------------
+// Contraseñas
+// ----------------------------
+export async function changeOwnPassword(currentPassword: string, newPasswordValue: string) {
+  const current = auth.currentUser;
+  if (!current || !current.email) throw new Error("No hay sesión válida");
+
+  // Reautenticación requerida por seguridad
+  const cred = EmailAuthProvider.credential(current.email, currentPassword);
+  await reauthenticateWithCredential(current, cred);
+  await updatePassword(current, newPasswordValue);
+}
+
+export async function sendPasswordReset(email: string) {
+  await sendPasswordResetEmail(auth, email);
 }

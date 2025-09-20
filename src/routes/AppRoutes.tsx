@@ -6,6 +6,7 @@ import LoginPage from "@/features/auth/pages/LoginPage";
 import PrivateRoute from "./PrivateRoute";
 import SalesPage from "@/features/tickets/pages/SalesPage";
 import ClientesPage from "@/features/tickets/pages/ClientesPage";
+import SettingsPage from "@/features/settings/pages/SettingsPage";
 
 const AppRoutes = () => {
   return (
@@ -21,7 +22,7 @@ const AppRoutes = () => {
           <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
             <Route path="register" element={<RegisterPage />} />
           </Route>
-          <Route path="settings" element={<p>Sección de Ajustes - En construcción</p>} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Route>
     </Routes>
