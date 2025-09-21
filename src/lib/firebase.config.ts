@@ -2,16 +2,32 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Permite configurar por variables de entorno en despliegue sin romper local
-// Vite expone variables prefijadas con VITE_
+// Config desde variables de entorno (Vite expone prefijo VITE_)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDk-g0l2AFLRvHEEcVuzsDF7rUF8zcxZjc",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "api-mkt-96181.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "api-mkt-96181",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "api-mkt-96181.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "524766780679",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:524766780679:web:ed78ac272ceaf2959a79a2",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+// Validar en dev para evitar builds con config incompleta
+if (
+  !firebaseConfig.apiKey ||
+  !firebaseConfig.authDomain ||
+  !firebaseConfig.projectId ||
+  !firebaseConfig.storageBucket ||
+  !firebaseConfig.messagingSenderId ||
+  !firebaseConfig.appId
+) {
+  if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[firebase.config] Faltan variables de entorno VITE_FIREBASE_*. Revisa tu .env o Secrets en CI."
+    );
+  }
+}
 
 // Inicializa Firebase
 export const firebaseApp = initializeApp(firebaseConfig);
