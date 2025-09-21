@@ -5,6 +5,8 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Para GitHub Pages: establece la ruta base desde env o '/'
+  base: process.env.VITE_BASE_PATH ?? '/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
