@@ -1,33 +1,29 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import React from "react";
 
-/* 🔹 Componente: Links (Desktop & Mobile) */
 const NavLinks: React.FC<{
-  links: { label: string; to?: string }[];
+  links: { label: string; to: string; icon?: React.ReactNode }[];
   onClick?: () => void;
-}> = ({ links, onClick }) => {
+  className?: string;
+  activeClassName?: string;
+}> = ({ links, onClick, className, activeClassName }) => {
   return (
     <>
-      {links.map((link) =>
-        link.to ? (
-          <Link
-            key={link.label}
-            to={link.to}
-            onClick={onClick}
-            className="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 transition"
-          >
-            {link.label}
-          </Link>
-        ) : (
-          <button
-            key={link.label}
-            onClick={onClick}
-            className="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 transition"
-          >
-            {link.label}
-          </button>
-        )
-      )}
+      {links.map((link) => (
+        <NavLink
+          key={link.label}
+          to={link.to}
+          onClick={onClick}
+          className={({ isActive }) =>
+            `${className} ${isActive ? activeClassName : ""}`
+          }
+        >
+          {link.icon && <span className="mr-2">{link.icon}</span>}
+          {link.label}
+        </NavLink>
+      ))}
     </>
   );
 };
+
 export default NavLinks;
